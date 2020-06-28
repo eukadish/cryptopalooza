@@ -493,7 +493,7 @@ func Example2() bool {
 		new(big.Int).Mul(big.NewInt(6), outputG[2]),
 	)
 
-	if prover.y = new(bn256.G1).ScalarMult(pk, y); err != nil {
+	if prover.y = new(bn256.GT).ScalarMult(pkt, y); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
@@ -503,15 +503,15 @@ func Example2() bool {
 	//
 	//
 
-	if prover.vpmid = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, vmid)); err != nil {
+	if prover.vpmid = new(bn256.G1).ScalarMult(pk1, new(big.Int).Mul(alpha, vmid)); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
-	if prover.wp = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, w)); err != nil {
+	if prover.wp = new(bn256.G2).ScalarMult(pk2, new(big.Int).Mul(alpha, w)); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
-	if prover.yp = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, y)); err != nil {
+	if prover.yp = new(bn256.GT).ScalarMult(pkt, new(big.Int).Mul(alpha, y)); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
@@ -529,36 +529,48 @@ func Example2() bool {
 		),
 	)
 
-	if prover.z = new(bn256.G1).ScalarMult(pk, z); err != nil {
+	if prover.z = new(bn256.GT).ScalarMult(pkt, z); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
 	var v0 *bn256.G1
-	if v0 = new(bn256.G1).ScalarMult(pk, leftG[0]); err != nil {
+	if v0 = new(bn256.G1).ScalarMult(pk1, leftG[0]); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
 	var vin *bn256.G1
-	if vin = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(big.NewInt(2), leftG[1])); err != nil {
+	if vin = new(bn256.G1).ScalarMult(pk1, new(big.Int).Mul(big.NewInt(2), leftG[1])); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
 	var w0 *bn256.G2
-	if w0 = new(bn256.G2).ScalarMult(pk, rightG[0]); err != nil {
+	if w0 = new(bn256.G2).ScalarMult(pk2, rightG[0]); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
-	var y0 *bn256.G1
-	if y0 = new(bn256.G1).ScalarMult(pk, outputG[0]); err != nil {
+	var y0 *bn256.GT
+	if y0 = new(bn256.GT).ScalarMult(pkt, outputG[0]); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
 
 	var left = new(bn256.G1).Add(new(bn256.G1).Add(v0, vin), prover.vmid)
 	var right = new(bn256.G2).Add(w0, prover.w)
 
-	var out = new(bn256.G1).Add(y0, prover.y)
+	var result = new(bn256.GT).Add(
+		bn256.Pair(left, right),
+		new(bn256.GT).Neg(new(bn256.GT).Add(y0, prover.y)),
+	)
 
-	bn256.Pair(left, right)
+	// get h
+
+	// new(bn256.GT).Add(y0, prover.y)
+
+	// bn256.Pair(left, right)
+
+	// fmt.Println(bytes.Equal(bn256.Pair(left, right).Marshal(), )
+
+	fmt.Println(bn256.Pair(left, right).Marshal())
+	fmt.Printf(" ( . . .) * ( . . . ) - ( . . . ) - ( . . . ) = %s \n", result.String()[0:18])
 
 	// var w *big.Int
 

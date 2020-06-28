@@ -14,7 +14,11 @@ try nail down the concepts step by step along with more examples.
 In addition I wanted to document here some of the more complex mathematical definitions for theunderlying concepts and
 provide an easier to understand an intuitive feel to make it more approachable for the more day to day work.
 
-    h<sub>&theta;</sub>(x) = &theta;<sub>o</sub> x + &theta;<sub>1</sub>x
+h<sub>&theta;</sub>(x) = &theta;<sub>o</sub> x + &theta;<sub>1</sub>x
+
+```math
+SE = \frac{\sigma}{\sqrt{n}}
+```
 
 ## Definitions
 
