@@ -14,6 +14,8 @@ try nail down the concepts step by step along with more examples.
 In addition I wanted to document here some of the more complex mathematical definitions for theunderlying concepts and
 provide an easier to understand an intuitive feel to make it more approachable for the more day to day work.
 
+    h<sub>&theta;</sub>(x) = &theta;<sub>o</sub> x + &theta;<sub>1</sub>x
+
 ## Definitions
 
 I think something the paper lacks which confused me during it's initial interpretation is figuring out how to convert

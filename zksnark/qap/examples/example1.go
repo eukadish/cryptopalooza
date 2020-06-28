@@ -2,7 +2,6 @@ package examples
 
 import (
 	"crypto/rand"
-	"fmt"
 	"log"
 	"math/big"
 
@@ -109,6 +108,8 @@ func partialTerm(x, x0, x1, x2, x3 *big.Int) *big.Int {
 func LinearQAP() bool {
 
 	var err error
+
+	// var v, w, y []*big.Int
 
 	var r1 *big.Int
 	if r1, _, err = bn256.RandomG1(rand.Reader); err != nil {
@@ -244,7 +245,7 @@ func LinearQAP() bool {
 		log.Printf("parameter generation %v", err)
 	}
 
-	// crs - = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+	log.Printf(" = = crs = = = = = = = = = = = = = = = = = \n \n")
 
 	var pk *bn256.G1
 	if pk = new(bn256.G1).ScalarBaseMult(sk); err != nil {
@@ -256,25 +257,28 @@ func LinearQAP() bool {
 		log.Printf("parameter generation %v", err)
 	}
 
+	log.Printf(" E(1)             = %s \n", crs1.String()[0:18])
+
 	var crs2 *bn256.G1
 	if crs2 = new(bn256.G1).ScalarMult(pk, s); err != nil { // Encrypt s^{1}
 		log.Printf("parameter generation %v", err)
 	}
+
+	log.Printf(" E(s)             = %s \n", crs2.String()[0:18])
 
 	var crs3 *bn256.G1
 	if crs3 = new(bn256.G1).ScalarMult(pk, alpha); err != nil { // Encrypt alpha
 		log.Printf("parameter generation %v", err)
 	}
 
+	log.Printf(" E(\u03B1)             = %s \n", crs3.String()[0:18])
+
 	var crs4 *bn256.G1
 	if crs4 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, s)); err != nil { // Encrypt alpha * s
 		log.Printf("parameter generation %v", err)
 	}
 
-	log.Printf("crs1: %s \n", crs1.String()[0:18])
-	log.Printf("crs2: %s \n", crs2.String()[0:18])
-	log.Printf("crs3: %s \n", crs3.String()[0:18])
-	log.Printf("crs4: %s \n", crs4.String()[0:18])
+	log.Printf(" E(\u03B1 * s)         = %s \n \n", crs4.String()[0:18])
 
 	// Function specific CRS generation
 
@@ -298,15 +302,7 @@ func LinearQAP() bool {
 		log.Printf("parameter generation %v", err)
 	}
 
-	fmt.Printf("betaV: %s \n", betaV.String()[0:12])
-	fmt.Printf("betaW: %s \n", betaW.String()[0:12])
-	fmt.Printf("betaY: %s \n", betaY.String()[0:12])
-
-	fmt.Printf("gamma: %s \n", gamma.String()[0:12])
-
-	// crs-f - = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-	// crs
+	log.Printf(" = = crs - f = = = = = = = = = = = = = = = \n \n")
 
 	// I_{free} = {}
 
@@ -318,8 +314,8 @@ func LinearQAP() bool {
 
 	// E(v_{2}(s)) =
 
-	var term1, term2, term3, term4 *big.Int
 	var numerator, inverse, denominator *big.Int
+	var term1, term2, term3, term4, term5, term6, term7, term8 *big.Int
 
 	numerator = partialTerm(s, r, r1, s1, s2)
 	denominator = partialTerm(r2, r, r1, s1, s2)
@@ -333,7 +329,7 @@ func LinearQAP() bool {
 	}
 
 	// use multiplicative inverse check if equal :(
-	log.Printf("E(v_{2}(s) = %s \n", crsf1.String()[0:18])
+	log.Printf(" E(v_{2}(s))      = %s \n", crsf1.String()[0:18])
 
 	// E(w_{1}(s)) =
 
@@ -355,7 +351,7 @@ func LinearQAP() bool {
 	}
 
 	// use multiplicative inverse check if equal :(
-	log.Printf("E(w_{1}(s) = %s \n", crsf2.String()[0:18])
+	log.Printf(" E(w_{1}(s))      = %s \n", crsf2.String()[0:18])
 
 	// E(w_{2}(s)) =
 
@@ -371,7 +367,7 @@ func LinearQAP() bool {
 	}
 
 	// use multiplicative inverse check if equal :(
-	log.Printf("E(w_{2}(s) = %s \n", crsf3.String()[0:18])
+	log.Printf(" E(w_{2}(s))      = %s \n", crsf3.String()[0:18])
 
 	// E(y_{1}(s)) =
 
@@ -393,7 +389,7 @@ func LinearQAP() bool {
 	}
 
 	// use multiplicative inverse check if equal :(
-	log.Printf("E(y_{1}(s) = %s \n", crsf4.String()[0:18])
+	log.Printf(" E(y_{1}(s))      = %s \n", crsf4.String()[0:18])
 
 	// E(y_{2}(s)) =
 
@@ -423,7 +419,477 @@ func LinearQAP() bool {
 	}
 
 	// use multiplicative inverse check if equal :(
-	log.Printf("E(y_{2}(s) = %s \n", crsf5.String()[0:18])
+	log.Printf(" E(y_{2}(s))      = %s \n", crsf5.String()[0:18])
+
+	// E(1) =
+
+	var crsf6 *bn256.G1
+	if crsf6 = new(bn256.G1).ScalarMult(pk, big.NewInt(1)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(1)             = %s \n", crsf6.String()[0:18])
+
+	// E(s) =
+
+	var crsf7 *bn256.G1
+	if crsf7 = new(bn256.G1).ScalarMult(pk, s); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(s)             = %s \n", crsf7.String()[0:18])
+
+	// E(alpha * v_{2}(s)) =
+
+	numerator = partialTerm(s, r, r1, s1, s2)
+	denominator = partialTerm(r2, r, r1, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var crsf8 *bn256.G1
+	if crsf8 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, term1)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B1 * v_{2}(s))  = %s \n", crsf8.String()[0:18])
+
+	// E(alpha * w_{1}(s)) =
+
+	numerator = partialTerm(s, r, r1, r2, s2)
+	denominator = partialTerm(s1, r, r1, r2, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r1, r2, s1, s2)
+	denominator = partialTerm(r, r1, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var crsf9 *bn256.G1
+	if crsf9 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, term2)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B1 * w_{1}(s))  = %s \n", crsf9.String()[0:18])
+
+	// E(alpha * w_{2}(s)) =
+
+	numerator = partialTerm(s, r, r1, r2, s1)
+	denominator = partialTerm(s2, r, r1, r2, s1)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var crsf10 *bn256.G1
+	if crsf10 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, term1)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B1 * w_{2}(s))  = %s \n", crsf10.String()[0:18])
+
+	// E(alpha * y_{1}(s)) =
+
+	numerator = partialTerm(s, r, r2, s1, s2)
+	denominator = partialTerm(r1, r, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r, r1, r2, s2)
+	denominator = partialTerm(s1, r, r1, r2, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	term3 = new(big.Int).Add(term1, term2)
+
+	var crsf11 *bn256.G1
+	if crsf11 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, term3)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B1 * y_{1}(s))  = %s \n", crsf11.String()[0:18])
+
+	// E(alpha * y_{2}(s)) =
+
+	numerator = partialTerm(s, r, r1, s1, s2)
+	denominator = partialTerm(r2, r, r1, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r, r1, r2, s1)
+	denominator = partialTerm(s2, r, r1, r2, s1)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r1, r2, s1, s2)
+	denominator = partialTerm(r, r1, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term3 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	term4 = new(big.Int).Add(term1, term2)
+	term5 = new(big.Int).Add(term3, term4)
+
+	var crsf12 *bn256.G1
+	if crsf12 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, term5)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B1 * y_{2}(s))  = %s \n", crsf12.String()[0:18])
+
+	// E(alpha) =
+
+	var crsf13 *bn256.G1
+	if crsf13 = new(bn256.G1).ScalarMult(pk, alpha); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B1)             = %s \n", crsf13.String()[0:18])
+
+	// E(alpha * s) =
+
+	var crsf14 *bn256.G1
+	if crsf14 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(alpha, s)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B1 * s)         = %s \n", crsf14.String()[0:18])
+
+	// E(betaV * v_{2}(s)) =
+
+	numerator = partialTerm(s, r, r1, s1, s2)
+	denominator = partialTerm(r2, r, r1, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var crsf15 *bn256.G1
+	if crsf15 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(betaV, term1)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B2v * v_{2}(s)) = %s \n", crsf15.String()[0:18])
+
+	// E(betaW * w_{1}(s)) =
+
+	numerator = partialTerm(s, r, r1, r2, s2)
+	denominator = partialTerm(s1, r, r1, r2, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r1, r2, s1, s2)
+	denominator = partialTerm(r, r1, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var crsf16 *bn256.G1
+	if crsf16 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(betaW, term2)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B2w * w_{1}(s)) = %s \n", crsf16.String()[0:18])
+
+	// E(betaW * w_{2}(s)) =
+
+	numerator = partialTerm(s, r, r1, r2, s1)
+	denominator = partialTerm(s2, r, r1, r2, s1)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var crsf17 *bn256.G1
+	if crsf17 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(betaW, term1)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B2w * w_{2}(s)) = %s \n", crsf17.String()[0:18])
+
+	// E(betaY * y_{1}(s)) =
+
+	numerator = partialTerm(s, r, r2, s1, s2)
+	denominator = partialTerm(r1, r, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r, r1, r2, s2)
+	denominator = partialTerm(s1, r, r1, r2, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	term3 = new(big.Int).Add(term1, term2)
+
+	var crsf18 *bn256.G1
+	if crsf18 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(betaY, term3)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B2y * y_{1}(s)) = %s \n", crsf18.String()[0:18])
+
+	// E(betaY * y_{2}(s)) =
+
+	numerator = partialTerm(s, r, r1, s1, s2)
+	denominator = partialTerm(r2, r, r1, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r, r1, r2, s1)
+	denominator = partialTerm(s2, r, r1, r2, s1)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r1, r2, s1, s2)
+	denominator = partialTerm(r, r1, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term3 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	term4 = new(big.Int).Add(term1, term2)
+	term5 = new(big.Int).Add(term3, term4)
+
+	var crsf19 *bn256.G1
+	if crsf19 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(betaY, term5)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B2y * y_{2}(s)) = %s \n \n", crsf19.String()[0:18])
+
+	log.Printf(" = = shortcrs - f = = = = = = = = = = = = \n \n")
+
+	// E(1) =
+
+	var shortcrsf1 *bn256.G1
+	if shortcrsf1 = new(bn256.G1).ScalarMult(pk, big.NewInt(1)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(1)             = %s \n", shortcrsf1.String()[0:18])
+
+	// E(alpha) =
+
+	var shortcrsf2 *bn256.G1
+	if shortcrsf2 = new(bn256.G1).ScalarMult(pk, alpha); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B1)             = %s \n", shortcrsf2.String()[0:18])
+
+	// E(gamma) =
+
+	var shortcrsf3 *bn256.G1
+	if shortcrsf3 = new(bn256.G1).ScalarMult(pk, gamma); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B3)             = %s \n", shortcrsf3.String()[0:18])
+
+	// E(betaV * gamma) =
+
+	var shortcrsf4 *bn256.G1
+	if shortcrsf4 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(betaV, gamma)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B2v * \u03B3)        = %s \n", shortcrsf4.String()[0:18])
+
+	// E(betaW * gamma)(s)) =
+
+	var shortcrsf5 *bn256.G1
+	if shortcrsf5 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(betaW, gamma)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B2w * \u03B3)        = %s \n", shortcrsf5.String()[0:18])
+
+	// E(betaY * y_{1}(s)) =
+
+	var shortcrsf6 *bn256.G1
+	if shortcrsf6 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(betaY, gamma)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(\u03B2w * \u03B3)        = %s \n", shortcrsf6.String()[0:18])
+
+	// E(v_{1}(s)) =
+
+	numerator = partialTerm(s, r, r2, s1, s2)
+	denominator = partialTerm(r1, r, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var shortcrsf7 *bn256.G1
+	if shortcrsf7 = new(bn256.G1).ScalarMult(pk, term1); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(v_{1}(s))      = %s \n", shortcrsf7.String()[0:18])
+
+	// E(w_{0}(s)) =
+
+	numerator = partialTerm(s, r, r2, s1, s2)
+	denominator = partialTerm(r1, r, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r, r1, s1, s2)
+	denominator = partialTerm(r2, r, r1, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var shortcrsf8 *bn256.G1
+	if shortcrsf8 = new(bn256.G1).ScalarMult(pk, new(big.Int).Add(term1, term2)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(w_{0}(s))      = %s \n", shortcrsf8.String()[0:18])
+
+	// E(t(s)) =
+
+	var shortcrsf9 *bn256.G1
+	if shortcrsf9 = new(bn256.G1).ScalarMult(pk, new(big.Int).Sub(s, r)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(t(s))          = %s \n \n", shortcrsf9.String()[0:18])
+
+	log.Printf(" = = prover - P = = = = = = = = = = = = = = = \n \n")
+
+	// v_{mid}(s) = Sigma_{k = 2}^{2} a_{k} * v_{k}(s) = a_{2} v_{2}(s)
+
+	numerator = partialTerm(s, r, r1, s1, s2)
+	denominator = partialTerm(r2, r, r1, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	var prover1 *bn256.G1
+	if prover1 = new(bn256.G1).ScalarMult(pk, new(big.Int).Mul(big.NewInt(2), term1)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(v_{mid}(s))     = %s \n", prover1.String()[0:18])
+
+	// w(s) = Sigma_{k = 1}^{2} a_{k} * v_{k}(s) = a_{1} w_{1}(s) + a_{2} w_{2}(s)
+
+	numerator = partialTerm(s, r, r1, r2, s2)
+	denominator = partialTerm(s1, r, r1, r2, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r1, r2, s1, s2)
+	denominator = partialTerm(r, r1, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	term3 = new(big.Int).Add(term1, term2)
+	term4 = new(big.Int).Mul(big.NewInt(2), term3) // 2 * w_{1}(s)
+
+	numerator = partialTerm(s, r, r1, r2, s1)
+	denominator = partialTerm(s2, r, r1, r2, s1)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term5 = new(big.Int).Mul(big.NewInt(2), new(big.Int).Mul(numerator, inverse))
+
+	term6 = new(big.Int).Mul(big.NewInt(6), term5) // 6 * w_{2}(s)
+
+	var crsf30 *bn256.G1
+	if crsf30 = new(bn256.G1).ScalarMult(pk, new(big.Int).Add(term4, term6)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(w(s))         = %s \n", crsf30.String()[0:18])
+
+	// y(s) = Sigma_{k = 1}^{2} a_{k} * y_{k}(s) = a_{1} y_{1}(s) + a_{2} y_{2}(s)
+
+	numerator = partialTerm(s, r, r2, s1, s2)
+	denominator = partialTerm(r1, r, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r, r1, r2, s2)
+	denominator = partialTerm(s1, r, r1, r2, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	term3 = new(big.Int).Mul(big.NewInt(2), new(big.Int).Add(term1, term2)) // 2 * y_{1}(s)
+
+	numerator = partialTerm(s, r, r1, s1, s2)
+	denominator = partialTerm(r2, r, r1, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term4 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r, r1, r2, s1)
+	denominator = partialTerm(s2, r, r1, r2, s1)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term5 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	numerator = partialTerm(s, r1, r2, s1, s2)
+	denominator = partialTerm(r, r1, r2, s1, s2)
+
+	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	term7 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+
+	term6 = new(big.Int).Add(term4, term5)
+	term8 = new(big.Int).Mul(big.NewInt(6), new(big.Int).Add(term6, term7)) // 6 * y_{2}(s)
+
+	var crsf31 *bn256.G1
+	if crsf31 = new(bn256.G1).ScalarMult(pk, new(big.Int).Add(term3, term8)); err != nil {
+		log.Printf("parameter generation %v", err)
+	}
+
+	// use multiplicative inverse check if equal :(
+	log.Printf(" E(y_{2}(s))      = %s \n", crsf31.String()[0:18])
+
+	return true
+}
+
+// LinearQAP generates the Quadratic Arithmetic Program to validate arithmetic circuits in Zero Knowledge
+func LinearR1CS() bool {
 
 	return true
 }

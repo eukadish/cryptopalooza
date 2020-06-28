@@ -621,5 +621,6 @@ import (
 func main() {
 	log.SetFlags(log.Lshortfile)
 
-	fmt.Printf("Linear QAP %t \n", examples.LinearQAP())
+	// fmt.Printf("Linear QAP %t \n", examples.LinearQAP())
+	fmt.Printf(" Example 2 %t \n", examples.Example2())
 }
