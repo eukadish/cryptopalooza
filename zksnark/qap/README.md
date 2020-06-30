@@ -1,4 +1,24 @@
+# Motivation
+
+In my attempt to better understand Zero Knowledge Proof technology and spending too much time piecing together
+information in random posts and articles. I decided to try get through some of the core work that has been built upon
+too enable more sophisticated projects such as Zcash, recursive SNARKS (Coda Protocal), and Ethereum's scaling solution
+with forgetful nodes.
+
+So, I started with the scipr-labs repo: , and looking through the references found: as the meatiest paper to get through
+for getting a feel for the nitty gritty of Zero Knowledge Proofs for algebraic expressions. The concept of an algebraic
+expression is simple enough, so would be best suited to focus on the Zero Knowledgeness of the whole thing.
+
 # Quadratic Arithmetic Programs
+
+The main driver of the paper is to show how to take any arithmetic expression and convert it into a _Quadratic
+Arithmetic Program_ from which is derivable a SNARK and then a statistically Zero Knowledge construction from the SNARK,
+which could be non interactively verified.
+
+So, to begin I took the simplest arithmetic expression I could think of: 2 x = 6 and moved forward with constructing a
+_QAP_ for it. This is simple enough, but in order to create the 
+
+
 
 In working through more advanced techniques in cryptography and blockchain applications understanding this construction
 I found very important for more advanced protocols such as ZCash (which provides a great introduction to some of the key
@@ -19,6 +39,8 @@ h<sub>&theta;</sub>(x) = &theta;<sub>o</sub> x + &theta;<sub>1</sub>x
 ```math
 SE = \frac{\sigma}{\sqrt{n}}
 ```
+
+$`\sqrt{2}`$
 
 ## Definitions
 

@@ -150,11 +150,10 @@ import (
 //           + 1 * -----------------------------------------------
 //                  (r  - r1) * (r  - r2) * (r  - s1) * (r  - s2)
 
-// TODO: Derive the product polynomials using: https://en.wikipedia.org/wiki/Polynomial_remainder_theorem
-
 // LagrangeBase represents the data that will be needed interpolate a
 // polynomial using the interpolation polynomial in the Lagrange form:
 // https://en.wikipedia.org/wiki/Lagrange_polynomial
+
 type LagrangeBase struct {
 	xCoords []*big.Int
 }
@@ -569,7 +568,7 @@ func Example2() bool {
 
 	// fmt.Println(bytes.Equal(bn256.Pair(left, right).Marshal(), )
 
-	fmt.Println(bn256.Pair(left, right).Marshal())
+	// fmt.Println(bn256.Pair(left, right).Marshal())
 	fmt.Printf(" ( . . .) * ( . . . ) - ( . . . ) - ( . . . ) = %s \n", result.String()[0:18])
 
 	// var w *big.Int
@@ -838,3 +837,8 @@ func Example2() bool {
 //      = (6 * (x / r^{2})) * (x - r)
 
 //
+
+func R1CSExample2() bool {
+
+	return true
+}

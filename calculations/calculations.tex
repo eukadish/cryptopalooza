@@ -1,0 +1,212 @@
+\documentclass{article}
+
+% set font encoding for PDFLaTeX, XeLaTeX, or LuaTeX
+% \usepackage{ifxetex,ifluatex}
+% \if\ifxetex T\else\ifluatex T\else F\fi\fi T%
+%   \usepackage{fontspec}
+% \else
+%   \usepackage[T1]{fontenc}
+%   \usepackage[utf8]{inputenc}
+%   \usepackage{lmodern}
+% \fi
+
+% \usepackage{hyperref}
+
+% \title{Title of Document}
+% \author{Name of Author}
+
+% Enable SageTeX to run SageMath code right inside this LaTeX file.
+% http://doc.sagemath.org/html/en/tutorial/sagetex.html
+% \usepackage{sagetex}
+
+% Enable PythonTeX to run Python – https://ctan.org/pkg/pythontex
+% \usepackage{pythontex}
+
+
+\pagestyle{empty}
+
+\usepackage[margin = 2.0 cm]{geometry}
+
+\usepackage{amsmath}
+
+\begin{document}
+% \maketitle
+
+\noindent This document presents some of the details for deriving the polynomials needed for generating the SNARKs in
+the example code. The goal is to generate a strong \textit{QAP} for the equation $ 3 * x = 6 $ as described here:
+https://eprint.iacr.org/2012/215.pdf \\ 
+
+\noindent The starting set of polynomials is provided a priori, because they are relatively trivial to figure out with
+Lagrangian interpolation compared to the polynomial product calculated for:
+
+\[
+    (v_{0} + \Sigma_{k = 1}^{2} a_{k} v_{k}) (w_{0} + \Sigma_{k = 1}^{2} a_{k} w_{k}) - (y_{0} + \Sigma_{k = 1}^{2} a_{k} y_{k})
+\]
+
+\noindent into the form $ h(x) t(x) = h(x) (x - r) $ for the SNARK. \\
+
+\noindent Starting with the first set of polynomials the equations are:
+
+\begin{align*}
+    v^{'}_{0}(x) &= 1 * \frac{(x  -  r) (x  - r_{1}) (x - r_{2}) (x  - s_{2})}{(s_{1} -  r) (s_{1} - r_{1}) (s_{1} - r_{2}) (s_{1} - s_{2})} \\
+    &+ 1 * \frac{(x  -  r) (x  - r_{1}) (x  - r_{2}) (x  - s_{1})}{(s_{2} -  r) (s_{2} - r_{1}) (s_{2} - r_{2}) (s_{2} - s_{1})} \\
+    &+ 3 * \frac{ (x  - r_{1}) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r  - r_{1}) (r  - r_{2}) (r  - s_{1}) (r  - s_{2})}
+\end{align*}
+
+\begin{align*}
+    v^{'}_{1}(x) &= 1 * \frac{(x  -  r) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r_{1} -  r) (r_{1} - r_{2}) (r_{1} - s_{1}) (r_{1} - s_{2})}
+\end{align*}
+
+\begin{align*}
+    v^{'}_{2}(x) &= 1 * \frac{(x  -  r) (x  - r_{1}) (x  - s_{1}) (x  - s_{2})}{(r_{2} -  r) (r_{2} - r_{1}) (r_{2} - s_{1}) (r_{2} - s_{2})}
+\end{align*}
+
+\noindent With Lagrange basis polynomials:
+
+\begin{align*}
+    l_{r}(x) &= \frac{ (x  - r_{1}) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r  - r_{1}) (r  - r_{2}) (r  - s_{1}) (r  - s_{2})} \\
+    l_{r_{1}}(x) &= \frac{(x  -  r) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r_{1} -  r) (r_{1} - r_{2}) (r_{1} - s_{1}) (r_{1} - s_{2})} \\
+    l_{r_{2}}(x) &= \frac{(x  -  r) (x  - r_{1}) (x  - s_{1}) (x  - s_{2})}{(r_{2} -  r) (r_{2} - r_{1}) (r_{2} - s_{1}) (r_{2} - s_{2})} \\
+    l_{s_{1}}(x) &= \frac{(x  -  r) (x  - r_{1}) (x - r_{2}) (x  - s_{2})}{(s_{1} -  r) (s_{1} - r_{1}) (s_{1} - r_{2}) (s_{1} - s_{2})} \\
+    l_{s_{2}}(x) &= \frac{(x  -  r) (x  - r_{1}) (x  - r_{2}) (x  - s_{1})}{(s_{2} -  r) (s_{2} - r_{1}) (s_{2} - r_{2}) (s_{2} - s_{1})} \\
+\end{align*}
+
+\noindent So that the first set can be rewritten as interpolation polynomials in Lagrange form:
+
+\begin{align*}
+    v^{'}_{0}(x) &= 1 * l_{s_{1}}(x) + 1 * l_{s_{2}}(x) + 3 * l_{r}(x) \\
+    v^{'}_{1}(x) &= 1 * l_{r_{1}}(x) \\
+    v^{'}_{2}(x) &= 1 * l_{r_{2}}(x)
+\end{align*}
+
+\noindent Next, in order to convert the set of polynomials that are part of the strong \textit{QAP} into the form
+needed, each of the basis polynomials needs to rewritten with a factor of $ x - r $. Fortunately, only $ l_{r}(x) $ is
+not in that form, but is converted using the procedure outlined here: 
+
+% https://en.wikipedia.org/wiki/Polynomial_remainder_theorem \\
+
+\begin{align*}
+    l_{r}(x) &= \frac{(x  - r_{1}) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r  - r_{1}) (r  - r_{2}) (r  - s_{1}) (r  - s_{2})} \\
+    &= \frac{(x^{2} + (-r_{1} - r_{2}) x + r_{1} r_{2}) (x^{2} + (-s_{1} - s_{2}) x + s_{1} s_{2})}{(r  - r_{1}) (r  - r_{2}) (r  - s_{1}) (r  - s_{2})}
+\end{align*}
+
+% \begin{align*}
+%     &= \frac{((x + (-r1 - r2)x + r1 r2)(x - r) + (r^{2} + (-r1 - r2) r + r1 r2))((x + (-r1 - r2)x + r1 r2)(x - r) + (r^{2} + (-r1 - r2) r + r1 r2))}{(r  - r) (r  - r2) (r  - s1) (r  - s2)} \\
+%     &=
+% \end{align*}
+
+\noindent Taking the first term in the of the product of the numerator shows that:
+
+\[
+    (x + (-r_{1} - r_{2}) x + r_{1} r_{2}) = (x - r1) (x - r2) (x - r) + (r - r1) (r - r2)  
+\]
+
+\noindent And substituting back into the basis polynomial, expanding terms, and consolidating coefficients of $ x - r $
+gives:
+
+\begin{align*}
+    l_{r}(x) &= \frac{(x  - r_{1}) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r  - r_{1}) (r  - r_{2}) (r  - s_{1}) (r  - s_{2})} \\
+    &= \frac{(x^{2} + (-r_{1} - r_{2}) x + r_{1} r_{2}) (x^{2} + (-s_{1} - s_{2}) x + s_{1} s_{2})}{(r  - r_{1}) (r  - r_{2}) (r  - s_{1}) (r  - s_{2})} \\
+    &= \frac{((x - r1) (x - r_{2}) (x - r) + (r - r_{1}) (r - r_{2}))((x - s_{1}) (x - s_{2}) (x - r) + (r - s_{1}) (r - s_{2}))}{(r  - r_{1}) (r  - r_{2}) (r  - s_{1}) (r  - s_{2})} \\
+    &=  A (x - r) + B (x - r) + C (x - r) + 1
+\end{align*}
+
+\noindent With
+
+\begin{align*}
+    A &= (x - r_{1}) (x - r_{2}) (x - s_{1}) (x - s_{2}) (x - r) \\
+    B &= (r - r_{1}) (r - r_{2}) (x - s_{1}) (x - s_{2}) \\
+    C &= (x - r_{1}) (x - r_{2}) (r - s_{1}) (r - s_{2})
+\end{align*}
+
+\noindent then to make some of the manipulations that will need to be made later easier it is helpful to factor out the
+$ x - r $ term in the basis polynomials:
+
+\begin{align*}
+    v^{'}_{0}(x) &= 1 * l^{'}_{s_{1}}(x) (x - r) + 1 * l^{'}_{s_{2}}(x) (x - r) + 3 (A(x) + B(x) + C(x)) (x - r) + 3 \\
+    v^{'}_{1}(x) &= 1 * l^{'}_{r_{1}}(x) (x - r) \\
+    v^{'}_{2}(x) &= 1 * l^{'}_{r_{2}}(x) (x - r)
+\end{align*}
+
+\noindent Where the primed basis polynomials are easy to see, so no need to take up space rewriting them here. The other two sets of polynomials are:
+
+\begin{align*}
+    w^{'}_{0}(x) &= 1 * \frac{(x  -  r) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r_{1} -  r) (r_{1} - r_{2}) (r_{1} - s_{1}) (r_{1} - s_{2})} + 1 * \frac{(x  -  r) (x  - r_{1}) (x  - s_{1}) (x  - s_{2})}{(r_{2} -  r) (r_{2} - r_{1}) (r_{2} - s_{1}) (r_{2} - s_{2})} \\
+    &= 1 * l_{r_{1}}(x) + 1 * l_{r_{2}}(x) \\
+    &= 1 * l^{'}_{r_{1}}(x) (x - r) + 1 * l^{'}_{r_{2}}(x) (x - r)
+\end{align*}
+
+
+\begin{align*}
+    w^{'}_{1}(x) &= 1 * \frac{(x  -  r) (x  - r_{1}) (x  - r_{2}) (x  - s_{2})}{(s_{1} -  r) (s_{1} - r_{1}) (s_{1} - r_{2}) (s_{1} - s_{2})} + 1 * \frac{(x  - r1) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r  - r_{1}) (r  - r_{2}) (r  - s_{1}) (r  - s_{2})} \\
+    &= 1 * l_{s_{1}}(x) + 1 * l_{r}(x) \\
+    &= 1 * l^{'}_{s_{1}}(x) (x - r) + (A(x) + B(x) + C(x)) (x - r) + 1
+\end{align*}
+
+\begin{align*}
+    w^{'}_{2}(x) &= 1 * \frac{(x  -  r) (x  - r_{1}) (x  - r_{2}) (x  - s_{1})}{(s_{2} -  r) (s_{2} - r1) (s_{2} - r_{2}) (s_{2} - s_{1})} \\
+    &= 1 * l_{s_{2}}(x) \\
+    &= 1 * l^{'}_{s_{2}}(x) (x - r)
+\end{align*}
+
+\noindent And
+
+\begin{align*}
+    y^{'}_{0}(x) &= 0
+\end{align*}
+
+\begin{align*}
+    y^{'}_{1}(x) &= 1 * \frac{(x  -  r) (x  - r_{2}) (x  - s_{1}) (x  - s_{2})}{(r_{1} -  r) (r_{1} - r_{2}) (r_{1} - s_{1}) (r_{1} - s_{2})} + 1 * \frac{(x  -  r) (x  - r_{1}) (x  - r_{2}) (x  - s_{2})}{(s_{1} -  r) (s_{1} - r_{1}) (s_{1} - r_{2}) (s_{1} - s_{2})} \\
+    &= 1 * l_{r_{1}}(x) + 1 * l_{s_{1}}(x) \\
+    &= 1 * l^{'}_{r_{1}}(x) (x - r) + 1 * l^{'}_{s_{1}}(x) (x - r)
+\end{align*}
+
+\begin{align*}
+    y^{'}_{2}(x) &= 1 * \frac{(x  - r_{1}) * (x  - r_{2}) * (x  - s_{1}) * (x  - s_{2})}{(r  - r_{1}) * (r  - r_{2}) * (r  - s_{1}) * (r  - s_{2})} \\
+    &+ 1 * \frac{(x  -  r) (x  - r_{1}) (x  - s_{1}) (x  - s_{2})}{(r_{2} -  r) (r_{2} - r_{1}) (r_{2} - s_{1}) (r_{2} - s_{2})} \\
+    &+ 1 * \frac{(x  -  r) (x  - r_{1}) (x  - r_{2}) (x  - s_{1})}{(s_{2} -  r) (s_{2} - r_{1}) (s_{2} - r_{2}) (s_{2} - s_{1})} \\
+    &= 1 * l_{r}(x) + 1 * l_{r_{2}}(x) + 1 * l_{s_{2}}(x) \\
+    &= 1 * l^{'}_{r_{2}}(x) (x - r) + 1 * l^{'}_{s_{2}}(x) (x - r) + (A(x) + B(x) + C(x)) (x - r) + 1
+\end{align*}
+
+\noindent Now before calculating the polynomial product at the top simplify each of the terms:
+
+\begin{align*}
+    v_{0} + \Sigma_{k = 1}^{2} a_{k} v_{k} &= 1 * l_{s_{1}}(x) + 1 * l_{s_{2}}(x) + 3 * l_{r}(x) + a_{1} * l_{r_{1}}(x) + a_{2} * l_{r_{2}}(x) \\
+    &= 3 (A(x) + B(x) + C(x)) (x - r) + 3 \\
+    &+ a_{1} * l^{'}_{r_{1}}(x) (x - r) + a_{2} * l^{'}_{r_{2}}(x) (x - r) + 1 * l^{'}_{s_{1}}(x) (x - r) + 1 * l^{'}_{s_{2}}(x) (x - r) \\
+    &= (3 A(x) + 3 B(x) + 3 C(x) + a_{1} * l^{'}_{r_{1}}(x) + a_{2} * l^{'}_{r_{2}}(x) + 1 * l^{'}_{s_{1}}(x) + 1 * l^{'}_{s_{2}}(x)) (x - r) + 3 \\
+    &= f_{v}(x) (x - r) + 3
+\end{align*}
+
+
+\begin{align*}
+    w_{0} + \Sigma_{k = 1}^{2} a_{k} w_{k} &= 1 * l_{r_{1}}(x) + 1 * l_{r_{2}}(x) + a_{1} * l_{s_{1}}(x) + a_{1} * l_{r}(x) + a_{2} * l_{s_{2}}(x) \\
+    &= a_{1} (A(x) + B(x) + C(x)) (x - r) + a_{1} \\
+    &+ 1 * l^{'}_{r_{1}}(x) (x - r) + 1 * l^{'}_{r_{2}}(x) (x - r) + a_{1} * l^{'}_{s_{1}}(x) (x - r) + a_{2} * l^{'}_{s_{2}}(x) (x - r) \\
+    &= (a_{1} A(x) + a_{1} B(x) + a_{1} C(x) + 1 * l^{'}_{r_{1}}(x) + 1 * l^{'}_{r_{2}}(x) + a_{1} * l^{'}_{s_{1}}(x) + a_{2} * l^{'}_{s_{2}}(x))(x - r) + a_{1} \\
+    &= f_{w}(x) (x - r) + a_{1}
+\end{align*}
+
+\begin{align*}
+    y_{0} + \Sigma_{k = 1}^{2} a_{k} y_{k} &= a_{1} * l_{r_{1}}(x) + a_{1} * l_{s_{1}}(x) + a_{2} * l_{r}(x) + a_{2} * l_{r_{2}}(x) + a_{2} * l_{s_{2}}(x) \\
+    &= a_{2} (A(x) + B(x) + C(x)) (x - r) + a_{2} \\
+    &+ a_{1} * l^{'}_{r_{1}}(x) (x - r) + a_{1} * l^{'}_{s_{1}}(x) (x - r) + a_{2} * l^{'}_{r_{2}}(x) (x - r) + a_{2} * l^{'}_{s_{2}}(x) (x - r) \\
+    &= f_{y}(x)(x - r) + a_{2}
+\end{align*}
+
+\noindent The product is then:
+
+\begin{align*}
+    (v_{0} + \Sigma_{k = 1}^{2} a_{k} v_{k}) (w_{0} + \Sigma_{k = 1}^{2} a_{k} w_{k}) - (y_{0} + \Sigma_{k = 1}^{2} a_{k} y_{k}) &= (f_{v}(x) (x - r) + 3)(f_{w}(x) (x - r) + a_{1}) - (f_{y}(x)(x - r) + a_{2}) \\
+    &= f_{v} (x) f_{w}(x) (x - r)^{2} + a_{1} f_{v}(x) (x - r) + 3 f_{w}(x)(x - r) + 3 a_{1} \\
+    &-f_{y}(x)(x - r) - a_{2} \\
+    &= f_{v} (x) f_{w}(x) (x - r)^{2} + 2 f_{v}(x) (x - r) + 3 f_{w}(x)(x - r) + 3 * 2 \\
+    &-f_{y}(x)(x - r) - 6 \\
+    &= (f_{v} (x) f_{w} (x) (x - r) + 2 f_{v}(x) + 3 f_{w}(x) - f_{y(x)})(x - r)
+\end{align*}
+
+\noindent And clearly we have an expression for $ h(x) $ that is a composition of slightly modified Lagrange basis
+polynomials.
+
+\end{document}

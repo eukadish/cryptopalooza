@@ -74,30 +74,30 @@ func Example4() bool {
 
 	var err error
 
-	var r1 *big.Int
-	if r1, _, err = bn256.RandomG1(rand.Reader); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
+	// var r1 *big.Int
+	// if r1, _, err = bn256.RandomG1(rand.Reader); err != nil {
+	// 	log.Printf("parameter generation %v", err)
+	// }
 
-	var r2 *big.Int
-	if r2, _, err = bn256.RandomG1(rand.Reader); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
+	// var r2 *big.Int
+	// if r2, _, err = bn256.RandomG1(rand.Reader); err != nil {
+	// 	log.Printf("parameter generation %v", err)
+	// }
 
-	var s1 *big.Int
-	if s1, _, err = bn256.RandomG1(rand.Reader); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
+	// var s1 *big.Int
+	// if s1, _, err = bn256.RandomG1(rand.Reader); err != nil {
+	// 	log.Printf("parameter generation %v", err)
+	// }
 
-	var s2 *big.Int
-	if s2, _, err = bn256.RandomG1(rand.Reader); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
+	// var s2 *big.Int
+	// if s2, _, err = bn256.RandomG1(rand.Reader); err != nil {
+	// 	log.Printf("parameter generation %v", err)
+	// }
 
-	var r *big.Int
-	if r, _, err = bn256.RandomG1(rand.Reader); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
+	// var r *big.Int
+	// if r, _, err = bn256.RandomG1(rand.Reader); err != nil {
+	// 	log.Printf("parameter generation %v", err)
+	// }
 
 	// log.Printf("r: %d", r)
 
@@ -282,149 +282,22 @@ func Example4() bool {
 
 	// E(v_{2}(s)) =
 
-	var term1, term2, term3, term4 *big.Int
-	var numerator, inverse, denominator *big.Int
+	// var term1, term2, term3, term4 *big.Int
+	// var numerator, inverse, denominator *big.Int
 
-	numerator = partialTerm(s, r, r1, s1, s2)
-	denominator = partialTerm(r2, r, r1, s1, s2)
+	// numerator = partialTerm(s, r, r1, s1, s2)
+	// denominator = partialTerm(r2, r, r1, s1, s2)
 
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
+	// inverse = new(big.Int).ModInverse(denominator, bn256.Order)
+	// term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
 
-	var crsf1 *bn256.G1
-	if crsf1 = new(bn256.G1).ScalarMult(pk, term1); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
+	// var crsf1 *bn256.G1
+	// if crsf1 = new(bn256.G1).ScalarMult(pk, term1); err != nil {
+	// 	log.Printf("parameter generation %v", err)
+	// }
 
-	// use multiplicative inverse check if equal :(
-	log.Printf("E(v_{2}(s) = %s \n", crsf1.String()[0:18])
-
-	// E(w_{1}(s)) =
-
-	numerator = partialTerm(s, r, r1, r2, s2)
-	denominator = partialTerm(s1, r, r1, r2, s2)
-
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
-
-	numerator = partialTerm(s, r1, r2, s1, s2)
-	denominator = partialTerm(r, r1, r2, s1, s2)
-
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
-
-	var crsf2 *bn256.G1
-	if crsf2 = new(bn256.G1).ScalarMult(pk, new(big.Int).Add(term1, term2)); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
-
-	// use multiplicative inverse check if equal :(
-	log.Printf("E(w_{1}(s) = %s \n", crsf2.String()[0:18])
-
-	// E(w_{2}(s)) =
-
-	numerator = partialTerm(s, r, r1, r2, s1)
-	denominator = partialTerm(s2, r, r1, r2, s1)
-
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
-
-	var crsf3 *bn256.G1
-	if crsf3 = new(bn256.G1).ScalarMult(pk, term1); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
-
-	// use multiplicative inverse check if equal :(
-	log.Printf("E(w_{2}(s) = %s \n", crsf3.String()[0:18])
-
-	// E(y_{1}(s)) =
-
-	numerator = partialTerm(s, r, r2, s1, s2)
-	denominator = partialTerm(r1, r, r2, s1, s2)
-
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
-
-	numerator = partialTerm(s, r, r1, r2, s2)
-	denominator = partialTerm(s1, r, r1, r2, s2)
-
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
-
-	var crsf4 *bn256.G1
-	if crsf4 = new(bn256.G1).ScalarMult(pk, new(big.Int).Add(term1, term2)); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
-
-	// use multiplicative inverse check if equal :(
-	log.Printf("E(y_{1}(s) = %s \n", crsf4.String()[0:18])
-
-	// E(y_{2}(s)) =
-
-	numerator = partialTerm(s, r, r1, s1, s2)
-	denominator = partialTerm(r2, r, r1, s1, s2)
-
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term1 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
-
-	numerator = partialTerm(s, r, r1, r2, s1)
-	denominator = partialTerm(s2, r, r1, r2, s1)
-
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term2 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
-
-	numerator = partialTerm(s, r1, r2, s1, s2)
-	denominator = partialTerm(r, r1, r2, s1, s2)
-
-	inverse = new(big.Int).ModInverse(denominator, bn256.Order)
-	term3 = new(big.Int).Mul(big.NewInt(1), new(big.Int).Mul(numerator, inverse))
-
-	term4 = new(big.Int).Add(term1, term2)
-
-	var crsf5 *bn256.G1
-	if crsf5 = new(bn256.G1).ScalarMult(pk, new(big.Int).Add(term3, term4)); err != nil {
-		log.Printf("parameter generation %v", err)
-	}
-
-	// use multiplicative inverse check if equal :(
-	log.Printf("E(y_{2}(s) = %s \n", crsf5.String()[0:18])
+	// // use multiplicative inverse check if equal :(
+	// log.Printf("E(v_{2}(s) = %s \n", crsf1.String()[0:18])
 
 	return true
 }
-
-// construct the snark`
-
-// use linear interpolation
-
-// v_{0}(r) = c_{0} = 3
-// v_{1}(r) = c_{1} = 0
-// v_{2}(r)         = 0
-
-// w_{0}(r) = d_{0} = 0
-// w_{1}(r) = d_{1} = 1
-// w_{2}(r)         = 0
-
-// y_{0}(r)         = 0
-// y_{1}(r)         = 0
-// y_{2}(r)         = 1
-
-// v_{0}(x) = 3 * x / r
-// v_{1}(x) = 0
-// v_{2}(x) = 0
-
-// w_{0}(x) = 0
-// w_{1}(x) = x / r
-// w_{2}(x) = 0
-
-// y_{0}(x) = 0
-// y_{1}(x) = 0
-// y_{2}(x) = x / r
-
-// construct the snark
-
-// P(x) = (3 * (x / r)) * (x / r) - (x / r)
-//      = (3 * (x / r)) * (2 * (x / r)) - (6 * (x / r))
-//      = 6 * (x / r) * (x / r - 1)
-//      = (6 * (x / r^{2})) * (x - r)
-
-//
