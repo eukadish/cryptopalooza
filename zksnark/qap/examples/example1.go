@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/cloudflare/bn256"
+
 	"github.com/eugenekadish/cryptopalooza/zksnark/qap/lagrange"
 )
 
@@ -299,11 +300,6 @@ func E1SQAP() bool {
 		fmt.Printf("parameter generation %v", err)
 	}
 
-	var gt *bn256.GT
-	if _, gt, err = bn256.RandomGT(rand.Reader); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
 	var r1 *big.Int
 	if r1, err = rand.Int(rand.Reader, bn256.Order); err != nil {
 		fmt.Printf("parameter generation %v", err)
@@ -369,6 +365,7 @@ func E1SQAP() bool {
 
 	leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
 	v[0] = new(bn256.G1).ScalarMult(g1, leftG[0])
+	// v[0] = new(bn256.G1).ScalarMult(g1, big.NewInt(3))
 
 	leftG = append(
 		leftG,
@@ -380,6 +377,7 @@ func E1SQAP() bool {
 
 	leftG[1] = new(big.Int).Mul(big.NewInt(2), leftG[1])
 	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1])
+	// v[1] = new(bn256.G1).ScalarMult(g1, new(big.Int).Mul(big.NewInt(2), big.NewInt(0)))
 
 	leftG = append(
 		leftG,
@@ -391,6 +389,7 @@ func E1SQAP() bool {
 
 	leftG[2] = new(big.Int).Mul(big.NewInt(6), leftG[2])
 	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2])
+	// v[2] = new(bn256.G1).ScalarMult(g1, new(big.Int).Mul(big.NewInt(6), big.NewInt(0)))
 
 	var w [3]*bn256.G2
 	var rightG []*big.Int
@@ -406,6 +405,7 @@ func E1SQAP() bool {
 
 	rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
 	w[0] = new(bn256.G2).ScalarMult(g2, rightG[0])
+	// w[0] = new(bn256.G2).ScalarMult(g2, big.NewInt(0))
 
 	rightG = append(
 		rightG,
@@ -418,6 +418,7 @@ func E1SQAP() bool {
 
 	rightG[1] = new(big.Int).Mul(big.NewInt(2), rightG[1])
 	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1])
+	// w[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(2), big.NewInt(1)))
 
 	rightG = append(
 		rightG,
@@ -429,8 +430,9 @@ func E1SQAP() bool {
 
 	rightG[2] = new(big.Int).Mul(big.NewInt(6), rightG[2])
 	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2])
+	// w[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(6), big.NewInt(0)))
 
-	var y [3]*bn256.GT
+	var y [3]*bn256.G2
 	var outputG []*big.Int
 
 	outputG = append(
@@ -439,7 +441,8 @@ func E1SQAP() bool {
 	)
 
 	outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
-	y[0] = new(bn256.GT).ScalarMult(gt, outputG[0])
+	y[0] = new(bn256.G2).ScalarMult(g2, outputG[0])
+	// y[0] = new(bn256.G2).ScalarMult(g2, big.NewInt(0))
 
 	outputG = append(
 		outputG,
@@ -451,7 +454,8 @@ func E1SQAP() bool {
 	)
 
 	outputG[1] = new(big.Int).Mul(big.NewInt(2), outputG[1])
-	y[1] = new(bn256.GT).ScalarMult(gt, outputG[1])
+	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1])
+	// y[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(2), big.NewInt(0)))
 
 	outputG = append(
 		outputG,
@@ -464,7 +468,8 @@ func E1SQAP() bool {
 	)
 
 	outputG[2] = new(big.Int).Mul(big.NewInt(6), outputG[2])
-	y[2] = new(bn256.GT).ScalarMult(gt, outputG[2])
+	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2])
+	// y[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(6), big.NewInt(1)))
 
 	var term1 = new(big.Int).Add(
 		leftG[0],
@@ -490,7 +495,10 @@ func E1SQAP() bool {
 		),
 	)
 
+	// var t = big.NewInt(0)
 	var t = new(big.Int).Sub(s, r)
+
+	// var h = big.NewInt(12)
 	var h = new(big.Int).Mul(
 		new(big.Int).Sub(
 			new(big.Int).Mul(term1, term2), term3,
@@ -498,25 +506,23 @@ func E1SQAP() bool {
 		new(big.Int).ModInverse(t, bn256.Order),
 	)
 
-	// fmt.Printf(" = = = t: %s \n", t.String()[0:18])
-	// fmt.Printf(" = = = h: %s \n", h.String()[0:18])
-	// fmt.Printf(" = = = h: %s \n", new(big.Int).Mul(h, t))
-
 	var eV = new(bn256.G1).Add(v[0], new(bn256.G1).Add(v[1], v[2]))
 	var eW = new(bn256.G2).Add(w[0], new(bn256.G2).Add(w[1], w[2]))
-	var eY = new(bn256.GT).Add(y[0], new(bn256.GT).Add(y[1], y[2]))
+	var eY = bn256.Pair(g1, new(bn256.G2).Add(y[0], new(bn256.G2).Add(y[1], y[2])))
+
+	// return bytes.Equal(bn256.Pair(eV, eW).Marshal(), eY.Marshal())
 
 	var eT = new(bn256.G1).ScalarMult(g1, t)
 	var eH = new(bn256.G2).ScalarMult(g2, h)
 
-	// var left = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).Neg(eY))
-	var left = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).ScalarMult(eY, big.NewInt(-1)))
+	var left = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).Neg(eY))
+	// // var left = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).ScalarMult(eY, big.NewInt(-1)))
 	var right = bn256.Pair(eT, eH)
 
-	// fmt.Printf(
-	// 	" (v0 + a1 * v1 + a2 * v2) * (w0 + a1 * w1 + a2 * w2) - (y0 + a1 * y1 + a2 * y2) = (%s) * (%s) - %s \n",
-	// 	eV.String()[0:18], eW.String()[0:18], eY.String()[0:18],
-	// )
+	// // fmt.Printf(
+	// // 	" (v0 + a1 * v1 + a2 * v2) * (w0 + a1 * w1 + a2 * w2) - (y0 + a1 * y1 + a2 * y2) = (%s) * (%s) - %s \n",
+	// // 	eV.String()[0:18], eW.String()[0:18], eY.String()[0:18],
+	// // )
 
 	return bytes.Equal(left.Marshal(), right.Marshal())
 }

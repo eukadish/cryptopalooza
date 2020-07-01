@@ -31,7 +31,12 @@ func BasisPolynomial(j int, xCoords ...*big.Int) func(*big.Int) *big.Int {
 			numerator = new(big.Int).Mul(numerator, new(big.Int).Sub(x, xCoord))
 		}
 
+		// fmt.Printf(" = num %v \n", numerator)
+		// fmt.Printf(" = denom %v \n", denominator)
+
 		// return new(big.Int).Div(numerator, denominator)
+		// return new(big.Int).Mul(numerator, new(big.Int).ModInverse(denominator, big.NewInt(7)))
+
 		return new(big.Int).Mul(numerator, new(big.Int).ModInverse(denominator, bn256.Order))
 	}
 }
@@ -41,7 +46,7 @@ func Interpolate(
 	x *big.Int, yCoords []int64, basis ...func(*big.Int) *big.Int,
 ) *big.Int {
 
-	var accumulator = big.NewInt(1)
+	var accumulator = big.NewInt(0)
 
 	var index int
 	var base func(*big.Int) *big.Int
