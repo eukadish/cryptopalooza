@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/eugenekadish/cryptopalooza/zksnark/qap/examples"
 )
@@ -619,8 +618,10 @@ import (
 // }
 
 func main() {
-	log.SetFlags(log.Lshortfile)
+	// log.SetFlags(log.Lshortfile)
 
-	fmt.Printf(" Example 1 %t \n", examples.Example1())
-	fmt.Printf(" Example 2 %t \n", examples.Example2())
+	fmt.Printf(" Example 1 QAP        %t \n", examples.Example1())
+	fmt.Printf(" Example 1 Strong QAP %t \n", examples.Example1StrongQAP())
+
+	// fmt.Printf(" Example 2 %t \n", examples.Example2())
 }
