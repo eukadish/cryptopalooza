@@ -63,8 +63,9 @@ import (
 // y_{1}(x)         = 0
 // y_{2}(x)         = 1
 
-// Example1 this function creates a QAP (Quadratic Arithmetic Program) for the arithmetic expression: 3 * x = 6
-func Example1() bool {
+// E1QAP creates a QAP (Quadratic Arithmetic Program) for the arithmetic
+// expression.
+func E1QAP() bool {
 
 	var err error
 
@@ -84,73 +85,120 @@ func Example1() bool {
 	// }
 
 	var v [3]*bn256.G1
+	var leftG []*big.Int
 
-	if v[0] = new(bn256.G1).ScalarMult(g1, big.NewInt(3)); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	if v[1] = new(bn256.G1).ScalarMult(g1, new(big.Int).Mul(big.NewInt(2), big.NewInt(0))); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	if v[2] = new(bn256.G1).ScalarMult(g1, new(big.Int).Mul(big.NewInt(6), big.NewInt(0))); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	var w [3]*bn256.G2
-
-	if w[0] = new(bn256.G2).ScalarMult(g2, big.NewInt(0)); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	if w[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(2), big.NewInt(1))); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	if w[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(6), big.NewInt(0))); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	// var y [3]*bn256.GT
-
-	// if y[0] = new(bn256.GT).ScalarMult(gt, big.NewInt(0)); err != nil {
-	// 	fmt.Printf("parameter generation %v", err)
-	// }
-
-	// if y[1] = new(bn256.GT).ScalarMult(gt, new(big.Int).Mul(big.NewInt(2), big.NewInt(0))); err != nil {
-	// 	fmt.Printf("parameter generation %v", err)
-	// }
-
-	// if y[2] = new(bn256.GT).ScalarMult(gt, new(big.Int).Mul(big.NewInt(6), big.NewInt(1))); err != nil {
-	// 	fmt.Printf("parameter generation %v", err)
-	// }
-
-	var y [3]*bn256.G2
-
-	if y[0] = new(bn256.G2).ScalarMult(g2, big.NewInt(0)); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	if y[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(2), big.NewInt(0))); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	if y[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(6), big.NewInt(1))); err != nil {
-		fmt.Printf("parameter generation %v", err)
-	}
-
-	var left = new(bn256.G1).Add(v[0], new(bn256.G1).Add(v[1], v[2]))
-	var right = new(bn256.G2).Add(w[0], new(bn256.G2).Add(w[1], w[2]))
-
-	var product = bn256.Pair(left, right)
-	var result = bn256.Pair(g1, new(bn256.G2).Add(y[0], new(bn256.G2).Add(y[1], y[2])))
-
-	fmt.Printf(
-		" (v0 + a1 * v1 + a2 * v2) * (w0 + a1 * w1 + a2 * w2) - (y0 + a1 * y1 + a2 * y2) = (%s) * (%s) - %s \n",
-		left.String()[0:18], right.String()[0:18], result.String()[0:18],
+	leftG = append(
+		leftG,
+		big.NewInt(3),
 	)
 
-	return bytes.Equal(product.Marshal(), result.Marshal())
+	leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
+	v[0] = new(bn256.G1).ScalarMult(g1, leftG[0])
+
+	leftG = append(
+		leftG,
+		big.NewInt(0),
+	)
+
+	leftG[1] = new(big.Int).Mul(big.NewInt(2), leftG[1])
+	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1])
+
+	leftG = append(
+		leftG,
+		big.NewInt(0),
+	)
+
+	leftG[2] = new(big.Int).Mul(big.NewInt(6), leftG[2])
+	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2])
+
+	var w [3]*bn256.G2
+	var rightG []*big.Int
+
+	rightG = append(
+		rightG,
+		big.NewInt(0),
+	)
+
+	rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
+	w[0] = new(bn256.G2).ScalarMult(g2, rightG[0])
+
+	rightG = append(
+		rightG,
+		big.NewInt(1),
+	)
+
+	rightG[1] = new(big.Int).Mul(big.NewInt(2), rightG[1])
+	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1])
+
+	rightG = append(
+		rightG,
+		big.NewInt(0),
+	)
+
+	rightG[2] = new(big.Int).Mul(big.NewInt(6), rightG[2])
+	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2])
+
+	// var y [3]*bn256.GT
+	// var outputG []*big.Int
+
+	// outputG = append(
+	// 	outputG,
+	// 	big.NewInt(0),
+	// )
+
+	// outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
+	// y[0] = new(bn256.GT).ScalarMult(gt, outputG[0])
+
+	// outputG = append(
+	// 	outputG,
+	// 	big.NewInt(0),
+	// )
+
+	// outputG[1] = new(big.Int).Mul(big.NewInt(2), outputG[1])
+	// y[1] = new(bn256.GT).ScalarMult(gt, outputG[1])
+
+	// outputG = append(
+	// 	outputG,
+	// 	big.NewInt(1),
+	// )
+
+	// outputG[2] = new(big.Int).Mul(big.NewInt(6), outputG[2])
+	// y[2] = new(bn256.GT).ScalarMult(gt, outputG[2])
+
+	var y [3]*bn256.G2
+	var outputG []*big.Int
+
+	outputG = append(
+		outputG,
+		big.NewInt(0),
+	)
+
+	outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
+	y[0] = new(bn256.G2).ScalarMult(g2, outputG[0])
+
+	outputG = append(
+		outputG,
+		big.NewInt(0),
+	)
+
+	outputG[1] = new(big.Int).Mul(big.NewInt(2), outputG[1])
+	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1])
+
+	outputG = append(
+		outputG,
+		big.NewInt(1),
+	)
+
+	outputG[2] = new(big.Int).Mul(big.NewInt(6), outputG[2])
+	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2])
+
+	var eV = new(bn256.G1).Add(v[0], new(bn256.G1).Add(v[1], v[2]))
+	var eW = new(bn256.G2).Add(w[0], new(bn256.G2).Add(w[1], w[2]))
+
+	// var eY = new(bn256.GT).Add(y[0], new(bn256.GT).Add(y[1], y[2]))
+	var eY = bn256.Pair(g1, new(bn256.G2).Add(y[0], new(bn256.G2).Add(y[1], y[2])))
+
+	return bytes.Equal(bn256.Pair(eV, eW).Marshal(), eY.Marshal())
 }
 
 // vp_{0}(r1) = 0, vp_{0}(r2) = 0, vp_{0}(s1) = 1, vp_{0}(s2) = 1,
@@ -235,9 +283,9 @@ func Example1() bool {
 //           + 1 * -----------------------------------------------
 //                  (r  - r1) * (r  - r2) * (r  - s1) * (r  - s2)
 
-// Example1StrongQAP creates a strong QAP for the arithmetic expression, and
+// E1SQAP creates a strong QAP for the arithmetic expression, as well as
 // generates and then verifies the SNARK.
-func Example1StrongQAP() bool {
+func E1SQAP() bool {
 
 	var err error
 
@@ -390,7 +438,7 @@ func Example1StrongQAP() bool {
 		big.NewInt(0),
 	)
 
-	outputG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
+	outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
 	y[0] = new(bn256.GT).ScalarMult(gt, outputG[0])
 
 	outputG = append(
@@ -450,9 +498,9 @@ func Example1StrongQAP() bool {
 		new(big.Int).ModInverse(t, bn256.Order),
 	)
 
-	fmt.Printf(" = = = t: %s \n", t.String()[0:18])
-	fmt.Printf(" = = = h: %s \n", h.String()[0:18])
-	fmt.Printf(" = = = h: %s \n", new(big.Int).Mul(h, t))
+	// fmt.Printf(" = = = t: %s \n", t.String()[0:18])
+	// fmt.Printf(" = = = h: %s \n", h.String()[0:18])
+	// fmt.Printf(" = = = h: %s \n", new(big.Int).Mul(h, t))
 
 	var eV = new(bn256.G1).Add(v[0], new(bn256.G1).Add(v[1], v[2]))
 	var eW = new(bn256.G2).Add(w[0], new(bn256.G2).Add(w[1], w[2]))
@@ -465,10 +513,10 @@ func Example1StrongQAP() bool {
 	var left = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).ScalarMult(eY, big.NewInt(-1)))
 	var right = bn256.Pair(eT, eH)
 
-	fmt.Printf(
-		" (v0 + a1 * v1 + a2 * v2) * (w0 + a1 * w1 + a2 * w2) - (y0 + a1 * y1 + a2 * y2) = (%s) * (%s) - %s \n",
-		eV.String()[0:18], eW.String()[0:18], eY.String()[0:18],
-	)
+	// fmt.Printf(
+	// 	" (v0 + a1 * v1 + a2 * v2) * (w0 + a1 * w1 + a2 * w2) - (y0 + a1 * y1 + a2 * y2) = (%s) * (%s) - %s \n",
+	// 	eV.String()[0:18], eW.String()[0:18], eY.String()[0:18],
+	// )
 
 	return bytes.Equal(left.Marshal(), right.Marshal())
 }
