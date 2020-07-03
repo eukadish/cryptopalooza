@@ -6,7 +6,13 @@ import (
 	"fmt"
 	"math/big"
 
+	// "golang.org/x/crypto/bn256"
 	"github.com/cloudflare/bn256"
+
+	// "github.com/ethereum/go-ethereum/crypto/bn256"
+	// bn256 "github.com/ethereum/go-ethereum/crypto/bn256/google"
+
+	// "github.com/ing-bank/zkrp/crypto/bn256"
 
 	"github.com/eugenekadish/cryptopalooza/zksnark/qap/lagrange"
 )
@@ -25,17 +31,17 @@ import (
 //        = 0 + 1 * 2
 
 /* # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                                                                                                           #
-#    3       x1    3       a1     3       2                                                                         p(a1) * p(a1) - a2 = (3) * (a1) - a2    #
-#     \     /       \     /        \     /                                                                                             = 3 * 2 - 6          #
-#      \   /         \   /          \   /                                                                                              = 0                  #
-#       \ /           \ /            \ /                                                                                                                    #
-#        *             *              *                                                                                                                     #
-#        |             |              |                                                                                                                     #
-#        |             |              |                                                                                                                     #
-#        |             |              |                                                                                                                     #
-#      f(x1)           a2             6                                                                                                                     #
-#                                                                                                                                                           #
+#                                                                                                                                                            #
+#    3       x1    3       a1    3       2                                                                           p(a1) * p(a1) - a2 = (3) * (a1) - a2    #
+#     \     /       \     /       \     /                                                                                               = 3 * 2 - 6          #
+#      \   /         \   /         \   /                                                                                                = 0                  #
+#       \ /           \ /           \ /                                                                                                                      #
+#        *             *             *                                                                                                                       #
+#        |             |             |                                                                                                                       #
+#        |             |             |                                                                                                                       #
+#        |             |             |                                                                                                                       #
+#      f(x1)           a2            6                                                                                                                       #
+#                                                                                                                                                            #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # */
 
 /* # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -290,6 +296,15 @@ func E1SQAP() bool {
 
 	var err error
 
+	// bn256.Order.Set(big.NewInt(11))
+	// bn256.Order.Set(big.NewInt(997))
+	// bn256.Order.Set(big.NewInt(999983))
+
+	var order = bn256.Order
+	// var order = bn256.Order.Set(big.NewInt(11))
+	// var order = bn256.Order.Set(big.NewInt(997))
+	fmt.Println(order)
+
 	var g1 *bn256.G1
 	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
 		fmt.Printf("parameter generation %v", err)
@@ -301,34 +316,57 @@ func E1SQAP() bool {
 	}
 
 	var r1 *big.Int
-	if r1, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if r1, err = rand.Prime(rand.Reader, order.BitLen()); err != nil {
+	if r1, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
+	// r1 = big.NewInt(2)
+	r1 = big.NewInt(3)
+	// fmt.Println(r1)
 
 	var r2 *big.Int
-	if r2, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if r2, err = rand.Prime(rand.Reader, order.BitLen()); err != nil {
+	if r2, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
+	// r2 = big.NewInt(4)
+	r2 = big.NewInt(5)
+	// fmt.Println(r2)
 
 	var s1 *big.Int
-	if s1, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if s1, err = rand.Prime(rand.Reader, order.BitLen()); err != nil {
+	if s1, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
+	// s1 = big.NewInt(6)
+	s1 = big.NewInt(7)
+	// fmt.Println(s1)
 
 	var s2 *big.Int
-	if s2, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if s2, err = rand.Prime(rand.Reader, order.BitLen()); err != nil {
+	if s2, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
+	// s2 = big.NewInt(8)
+	s2 = big.NewInt(11)
+	// fmt.Println(s2)
 
 	var r *big.Int
-	if r, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if r, err = rand.Prime(rand.Reader, order.BitLen()); err != nil {
+	if r, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
+	// r = big.NewInt(10)
+	r = big.NewInt(13)
+	// fmt.Println(r)
 
 	var s *big.Int
-	if s, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if s, err = rand.Prime(rand.Reader, order.BitLen()); err != nil {
+	if s, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
+	// s = big.NewInt(22)
+	fmt.Println(s)
 
 	// var alpha *big.Int
 	// if alpha, err = rand.Int(rand.Reader, bn256.Order); err != nil {
@@ -479,6 +517,8 @@ func E1SQAP() bool {
 		),
 	)
 
+	fmt.Printf(" = = term1: %d \n", new(big.Int).Mod(term1, order))
+
 	var term2 = new(big.Int).Add(
 		rightG[0],
 		new(big.Int).Add(
@@ -486,6 +526,8 @@ func E1SQAP() bool {
 			rightG[2],
 		),
 	)
+
+	fmt.Printf(" = = term2: %d \n", new(big.Int).Mod(term2, order))
 
 	var term3 = new(big.Int).Add(
 		outputG[0],
@@ -495,40 +537,178 @@ func E1SQAP() bool {
 		),
 	)
 
-	// var t = big.NewInt(0)
-	var t = new(big.Int).Sub(s, r)
+	fmt.Printf(" = = term3: %d \n", new(big.Int).Mod(term3, order))
 
-	// var h = big.NewInt(12)
+	var t = new(big.Int).Mul(
+		new(big.Int).Sub(s, r),
+
+		new(big.Int).Mul(
+			new(big.Int).Mul(
+				new(big.Int).Sub(s, r1),
+				new(big.Int).Sub(s, r2),
+			),
+			new(big.Int).Mul(
+				new(big.Int).Sub(s, s1),
+				new(big.Int).Sub(s, s2),
+			),
+		),
+	)
+
+	fmt.Printf(" = = t: %d \n", new(big.Int).Mod(t, order))
+
 	var h = new(big.Int).Mul(
 		new(big.Int).Sub(
 			new(big.Int).Mul(term1, term2), term3,
 		),
-		new(big.Int).ModInverse(t, bn256.Order),
+		new(big.Int).ModInverse(t, order),
 	)
+
+	fmt.Printf(" = = h: %d \n", new(big.Int).Mod(h, order))
 
 	var eV = new(bn256.G1).Add(v[0], new(bn256.G1).Add(v[1], v[2]))
 	var eW = new(bn256.G2).Add(w[0], new(bn256.G2).Add(w[1], w[2]))
 	var eY = bn256.Pair(g1, new(bn256.G2).Add(y[0], new(bn256.G2).Add(y[1], y[2])))
 
-	// return bytes.Equal(bn256.Pair(eV, eW).Marshal(), eY.Marshal())
-
 	var eT = new(bn256.G1).ScalarMult(g1, t)
 	var eH = new(bn256.G2).ScalarMult(g2, h)
 
 	var left = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).Neg(eY))
-	// // var left = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).ScalarMult(eY, big.NewInt(-1)))
+	// var left = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).ScalarMult(eY, big.NewInt(-1)))
+
 	var right = bn256.Pair(eT, eH)
 
-	// // fmt.Printf(
-	// // 	" (v0 + a1 * v1 + a2 * v2) * (w0 + a1 * w1 + a2 * w2) - (y0 + a1 * y1 + a2 * y2) = (%s) * (%s) - %s \n",
-	// // 	eV.String()[0:18], eW.String()[0:18], eY.String()[0:18],
-	// // )
+	// var res = new(bn256.GT).Add(left, new(bn256.GT).Neg(right))
+	// fmt.Printf("parameter generation %v", res)
+
+	// fmt.Printf(
+	// 	" (v0 + a1 * v1 + a2 * v2) * (w0 + a1 * w1 + a2 * w2) - (y0 + a1 * y1 + a2 * y2) = (%s) * (%s) - %s \n",
+	// 	eV.String()[0:18], eW.String()[0:18], eY.String()[0:18],
+	// )
+
+	_, _ = left.Unmarshal(left.Marshal())
+	_, _ = right.Unmarshal(right.Marshal())
 
 	return bytes.Equal(left.Marshal(), right.Marshal())
 }
 
-// LinearR1CS generates the Quadratic Arithmetic Program to validate arithmetic circuits in Zero Knowledge
-func LinearR1CS() bool {
+// E1R1CS generates the Quadratic Arithmetic Program to validate arithmetic circuits in Zero Knowledge
+func E1R1CS() bool {
 
-	return true
+	var err error
+
+	var eV *bn256.G1
+	var eY *bn256.G2
+	var eW *bn256.G2
+	var eT *bn256.G1
+	var eH *bn256.G2
+
+	var res1 *bn256.GT
+	var res2 *bn256.GT
+
+	var order = bn256.Order
+	// var order = bn256.Order.Set(big.NewInt(11))
+	// var order = bn256.Order.Set(big.NewInt(23))
+	fmt.Println(order)
+
+	var g1 *bn256.G1
+	// g1 = new(bn256.G1).ScalarBaseMult(new(big.Int).SetInt64(1))
+	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var g2 *bn256.G2
+	// g2 = new(bn256.G2).ScalarBaseMult(new(big.Int).SetInt64(1))
+	if _, g2, err = bn256.RandomG2(rand.Reader); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var term1, term2, term3, h, t *big.Int
+
+	term1 = big.NewInt(4)
+	term2 = big.NewInt(3)
+	term3 = big.NewInt(2)
+
+	t = big.NewInt(2)
+	h = big.NewInt(5)
+
+	// var left = new(big.Int).Mod(
+	// 	new(big.Int).Sub(
+	// 		new(big.Int).Mul(term1, term2),
+	// 		term3,
+	// 	),
+	// 	// bn256.Order,
+	// 	order,
+	// )
+
+	// var right = new(big.Int).Mod(
+	// 	new(big.Int).Mul(t, h),
+	// 	// bn256.Order,
+	// 	order,
+	// )
+
+	// eV = new(bn256.G1).ScalarMult(g1, term1)
+	// // eV = new(bn256.G1).ScalarMult(g1, new(big.Int).Mod(term1, order))
+
+	// eW = new(bn256.G2).ScalarMult(g2, term2)
+	// // eW = new(bn256.G2).ScalarMult(g2, new(big.Int).Mod(term2, bn256.Order))
+
+	// eY = new(bn256.G2).ScalarMult(g2, term3)
+	// // eY = new(bn256.G2).Neg(new(bn256.G2).ScalarMult(g2, term3))
+	// // eY = new(bn256.G2).ScalarMult(g2, new(big.Int).Neg(term3))
+	// // eY = new(bn256.G2).ScalarMult(g2, new(big.Int).Mod(new(big.Int).Neg(term3), bn256.Order))
+
+	// eT = new(bn256.G1).ScalarMult(g1, t)
+	// // eT = new(bn256.G1).ScalarMult(g1, new(big.Int).Mod(t, bn256.Order))
+
+	// eH = new(bn256.G2).ScalarMult(g2, h)
+	// // eH = new(bn256.G2).ScalarMult(g2, new(big.Int).Mod(h, bn256.Order))
+
+	// res1 = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).Neg(bn256.Pair(g1, eY)))
+	// // res1 = new(bn256.GT).Add(bn256.Pair(eV, eW), bn256.Pair(g1, eY))
+
+	// res2 = bn256.Pair(eT, eH)
+
+	// fmt.Printf(" Example 1 R1CS %t \n", bytes.Equal(res1.Marshal(), res2.Marshal()))
+
+	term1 = big.NewInt(10)
+	term2 = big.NewInt(9)
+	term3 = big.NewInt(1)
+
+	t = big.NewInt(4)
+	h = big.NewInt(3)
+
+	eV = new(bn256.G1).ScalarMult(g1, term1)
+	// eV = new(bn256.G1).ScalarMult(g1, new(big.Int).Mod(term1, order))
+
+	eW = new(bn256.G2).ScalarMult(g2, term2)
+	// eW = new(bn256.G2).ScalarMult(g2, new(big.Int).Mod(term2, bn256.Order))
+
+	eY = new(bn256.G2).ScalarMult(g2, term3)
+	// eY = new(bn256.G2).Neg(new(bn256.G2).ScalarMult(g2, term3))
+	// eY = new(bn256.G2).ScalarMult(g2, new(big.Int).Neg(term3))
+	// eY = new(bn256.G2).ScalarMult(g2, new(big.Int).Mod(new(big.Int).Neg(term3), bn256.Order))
+
+	eT = new(bn256.G1).ScalarMult(g1, t)
+	// eT = new(bn256.G1).ScalarMult(g1, new(big.Int).Mod(t, bn256.Order))
+
+	eH = new(bn256.G2).ScalarMult(g2, h)
+	// eH = new(bn256.G2).ScalarMult(g2, new(big.Int).Mod(h, bn256.Order))
+
+	res1 = new(bn256.GT).Add(bn256.Pair(eV, eW), new(bn256.GT).Neg(bn256.Pair(g1, eY)))
+	// res1 = new(bn256.GT).Add(bn256.Pair(eV, eW), bn256.Pair(g1, eY))
+
+	res2 = bn256.Pair(eT, eH)
+
+	// fmt.Printf(" = = L E F T %v \n", res1)
+
+	// https://eprint.iacr.org/2013/507.pdf
+
+	// [3, 0, 0] . [1, 2, 6]
+	// [0, 1, 0] . [1, 2, 6]
+
+	// [0, 0, 1] . [1, 2, 6]
+
+	// 3 * 2 - 6 = 0
+
+	return bytes.Equal(res1.Marshal(), res2.Marshal())
 }
