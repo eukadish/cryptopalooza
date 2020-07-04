@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/eugenekadish/cryptopalooza/zksnark/qap/examples"
+	"github.com/eugenekadish/cryptopalooza/zksnark/qap"
 )
 
 // https://eprint.iacr.org/2012/215.pdf
+// https://eprint.iacr.org/2013/507.pdf
 
 // f(x1) = 2 * x1 + 5
 //       = 1 * (5 + 2 * x1)
@@ -293,8 +294,11 @@ import (
 func main() {
 	// log.SetFlags(log.Lshortfile)
 
+	fmt.Printf(" Example 1 QAP        %t \n", qap.E1QAP())
+	fmt.Printf(" Example 1 Strong QAP %t \n", qap.E1SQAP())
+
 	// fmt.Printf(" Example 1 QAP        %t \n", examples.E1QAP())
-	fmt.Printf(" Example 1 Strong QAP %t \n", examples.E1SQAP())
+	// fmt.Printf(" Example 1 Strong QAP %t \n", examples.E1SQAP())
 
 	// fmt.Printf(" Example 1 R1CS %t \n", examples.E1R1CS())
 

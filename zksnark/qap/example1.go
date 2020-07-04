@@ -1,4 +1,4 @@
-package examples
+package qap
 
 import (
 	"bytes"
@@ -396,17 +396,15 @@ func E1SQAP() bool {
 		leftG,
 		lagrange.Interpolate(
 			s, []int64{3, 1, 1},
-			lagrange.BasisPolynomial(0, []*big.Int{r, r1, r2, s1, s2}...),
-			lagrange.BasisPolynomial(3, []*big.Int{r, r1, r2, s1, s2}...),
-			lagrange.BasisPolynomial(4, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 0, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 3, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 4, []*big.Int{r, r1, r2, s1, s2}...),
 		),
 	)
 
 	leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
 	v[0] = new(bn256.G1).ScalarMult(g1, leftG[0])
-	// v[0] = new(bn256.G1).ScalarMult(g1, big.NewInt(3))
 
-	// Data points: (r1, 1)
 	leftG = append(
 		leftG,
 		lagrange.Interpolate(
@@ -417,9 +415,7 @@ func E1SQAP() bool {
 
 	leftG[1] = new(big.Int).Mul(big.NewInt(2), leftG[1])
 	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1])
-	// v[1] = new(bn256.G1).ScalarMult(g1, new(big.Int).Mul(big.NewInt(2), big.NewInt(0)))
 
-	// Data points: (r2, 1)
 	leftG = append(
 		leftG,
 		lagrange.Interpolate(
@@ -430,7 +426,6 @@ func E1SQAP() bool {
 
 	leftG[2] = new(big.Int).Mul(big.NewInt(6), leftG[2])
 	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2])
-	// v[2] = new(bn256.G1).ScalarMult(g1, new(big.Int).Mul(big.NewInt(6), big.NewInt(0)))
 
 	var w [3]*bn256.G2
 	var rightG []*big.Int
@@ -446,32 +441,29 @@ func E1SQAP() bool {
 
 	rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
 	w[0] = new(bn256.G2).ScalarMult(g2, rightG[0])
-	// w[0] = new(bn256.G2).ScalarMult(g2, big.NewInt(0))
 
 	rightG = append(
 		rightG,
 		lagrange.Interpolate(
 			s, []int64{1, 1},
-			lagrange.BasisPolynomial(0, []*big.Int{r, r1, r2, s1, s2}...),
-			lagrange.BasisPolynomial(3, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 0, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 3, []*big.Int{r, r1, r2, s1, s2}...),
 		),
 	)
 
 	rightG[1] = new(big.Int).Mul(big.NewInt(2), rightG[1])
 	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1])
-	// w[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(2), big.NewInt(1)))
 
 	rightG = append(
 		rightG,
 		lagrange.Interpolate(
 			s, []int64{1},
-			lagrange.BasisPolynomial(4, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 4, []*big.Int{r, r1, r2, s1, s2}...),
 		),
 	)
 
 	rightG[2] = new(big.Int).Mul(big.NewInt(6), rightG[2])
 	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2])
-	// w[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(6), big.NewInt(0)))
 
 	var y [3]*bn256.G2
 	var outputG []*big.Int
@@ -483,34 +475,31 @@ func E1SQAP() bool {
 
 	outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
 	y[0] = new(bn256.G2).ScalarMult(g2, outputG[0])
-	// y[0] = new(bn256.G2).ScalarMult(g2, big.NewInt(0))
 
 	outputG = append(
 		outputG,
 		lagrange.Interpolate(
 			s, []int64{1, 1},
-			lagrange.BasisPolynomial(1, []*big.Int{r, r1, r2, s1, s2}...),
-			lagrange.BasisPolynomial(3, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 1, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 3, []*big.Int{r, r1, r2, s1, s2}...),
 		),
 	)
 
 	outputG[1] = new(big.Int).Mul(big.NewInt(2), outputG[1])
 	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1])
-	// y[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(2), big.NewInt(0)))
 
 	outputG = append(
 		outputG,
 		lagrange.Interpolate(
 			s, []int64{1, 1, 1},
-			lagrange.BasisPolynomial(0, []*big.Int{r, r1, r2, s1, s2}...),
-			lagrange.BasisPolynomial(2, []*big.Int{r, r1, r2, s1, s2}...),
-			lagrange.BasisPolynomial(4, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 0, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 2, []*big.Int{r, r1, r2, s1, s2}...),
+			BasisPolynomial(order, 4, []*big.Int{r, r1, r2, s1, s2}...),
 		),
 	)
 
 	outputG[2] = new(big.Int).Mul(big.NewInt(6), outputG[2])
 	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2])
-	// y[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Mul(big.NewInt(6), big.NewInt(1)))
 
 	var term1 = new(big.Int).Add(
 		leftG[0],
@@ -588,8 +577,10 @@ func E1SQAP() bool {
 	// 	eV.String()[0:18], eW.String()[0:18], eY.String()[0:18],
 	// )
 
-	_, _ = left.Unmarshal(left.Marshal())
-	_, _ = right.Unmarshal(right.Marshal())
+	// _, _ = left.Unmarshal(left.Marshal())
+	// _, _ = right.Unmarshal(right.Marshal())
+
+	// return bytes.Equal(left.Marshal(), right.Marshal())
 
 	return bytes.Equal(left.Marshal(), right.Marshal())
 }

@@ -29,13 +29,8 @@ func BasisPolynomial(order *big.Int, j int, xCoords ...*big.Int) func(*big.Int) 
 			numerator = new(big.Int).Mul(numerator, new(big.Int).Sub(x, xCoord))
 		}
 
-		// fmt.Printf(" = num %v \n", numerator)
-		// fmt.Printf(" = denom %v \n", denominator)
-
-		// return new(big.Int).Div(numerator, denominator)
-		// return new(big.Int).Mul(numerator, new(big.Int).ModInverse(denominator, big.NewInt(7)))
-
-		return new(big.Int).Mul(numerator, new(big.Int).ModInverse(denominator, order))
+		// return new(big.Int).Mul(numerator, new(big.Int).ModInverse(denominator, order))
+		return new(big.Int).Mod(new(big.Int).Mul(numerator, new(big.Int).ModInverse(denominator, order)), order)
 	}
 }
 
