@@ -297,7 +297,7 @@ func main() {
 	fmt.Printf(" Example 1 QAP        %t \n", qap.E1QAP())
 	fmt.Printf(" Example 1 Strong QAP %t \n", qap.E1SQAP())
 
-	// fmt.Printf(" Example 1 QAP        %t \n", examples.E1QAP())
+	fmt.Printf(" Example 2 QAP        %t \n", qap.E2QAP())
 	// fmt.Printf(" Example 1 Strong QAP %t \n", examples.E1SQAP())
 
 	// fmt.Printf(" Example 1 R1CS %t \n", examples.E1R1CS())
