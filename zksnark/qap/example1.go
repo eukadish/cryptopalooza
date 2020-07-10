@@ -7,10 +7,10 @@ import (
 	"math/big"
 
 	// "golang.org/x/crypto/bn256"
-	"github.com/cloudflare/bn256"
+	// "github.com/cloudflare/bn256"
 
 	// "github.com/ethereum/go-ethereum/crypto/bn256"
-	// bn256 "github.com/ethereum/go-ethereum/crypto/bn256/google"
+	bn256 "github.com/ethereum/go-ethereum/crypto/bn256/google"
 
 	// "github.com/ing-bank/zkrp/crypto/bn256"
 

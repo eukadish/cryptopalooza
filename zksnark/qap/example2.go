@@ -1,6 +1,7 @@
 package qap
 
 import (
+	"bytes"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -10,26 +11,32 @@ import (
 	"github.com/eugenekadish/cryptopalooza/zksnark/qap/lagrange"
 )
 
-// f(x1, x2, x3, x4) = 4 * x1 * x2 - 7 * x2 + 3 * x3
-//                   = x3 + 3 * x4 - 7 * x5
-//                   = f2(x3, x4, x5)
+// f(x1, x2, x3, x4) = 4 * x1 * x2 - 7 * x2 + 3 * x4
+//                   =     x3      - 7 * x2 + 3 * x4
+//                   = f2(x2, x3, x4)
+//                   = x5
 
-// x2          => x5
-// x3          => x4
-// 4 * x1 * x2 => x3
+// 4 * a1 * a2 - 7 * a2 + 3 * a4 = a5
+
+// This relation is satisfied for a1 = 3, a2 = 2, a4 = 1, and a5 = 13. The index
+// 3 is skipped for convenience, because it will be used for an intermediate
+// result for the QAP composition.
 
 // f1(x1, x2) = 4 * x1 * x2
 //            = (4 * x1) * x2
 //            = p1(x1, x2) * p2(x1, x2)
+//            = x3
 //            = 24
 
-// p1(x1, x2) = c_{0} + Sigma_{i = 1}^{m - 1} c_{i} * x_{i}
-//            = c_{0} + c_{1} * x_{1}
+// p1(x1, x2) = v1_{0} + v1_{1} * x_{1} + v1_{2} * x_{2} + v1_{3} * x_{3} + v1_{4} * x_{4} + v1_{5} * x_{5}
+//            =   0    +     4  *  a1   +     0  *  a2   +     0  *  a3   +     0  *  a4   +     0  *  a5
 //            = 4 * 3
 
-// p2(x1, x2) = d_{0} + Sigma_{i = 1}^{m - 1} d_{i} * x_{i}
-//            = d_{0} + d_{1} * x_{1} + d_{2} * x_{2}
+// p2(x1, x2) = w1_{0} + w1_{1} * x_{1} + w1_{2} * x_{2} + w1_{3} * x_{3} + w1_{4} * x_{4} + w1_{5} * x_{5}
+//            =   0    +     0  *  a1   +     1  *  a2   +     0  *  a3   +     0  *  a4   +     0  *  a5
 //            = 1 * 2
+
+// I_{1} = {1, 2, 3}
 
 /* # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                                                                                            #
@@ -45,36 +52,21 @@ import (
 #                                                                                                                                                            #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # */
 
-// t1(x) = x - r1
-
-// v1_{0}(x) = c_{0} = 0
-// v1_{1}(x) = c_{1} = 4
-// v1_{2}(x) = c_{2} = 0
-// v1_{3}(x)         = 0
-
-// w1_{0}(x) = d_{0} = 0
-// w1_{1}(x) = d_{1} = 0
-// w1_{2}(x) = d_{2} = 1
-// w1_{3}(x)         = 0
-
-// y1_{0}(x)         = 0
-// y1_{1}(x)         = 0
-// y1_{2}(x)         = 0
-// y1_{3}(x)         = 1
-
-// f2(x3, x4, x5) = x3 + 3 * x4 - 7 * x5
-//                = 1 * (x3 + 3 * x4 - 7 * x5)
-//                = p1(x3, x4, x5) * p2(x3, x4, x5)
-//                = 24 + 3 * 1 - 7 * 2
+// f2(x3, x4, x5) = x3 - 7 * x2 + 3 * x4
+//                = 1 * ((-7) * x2 + 1 * x3 + 3 * x4)
+//                = p1(x2, x3, x4) * p2(x2, x3, x4)
+//                = x5
 //                = 13
 
-// p1(x3, x4, x5) = c_{3} + Sigma_{i = 4}^{m - 1} c_{i} * x_{i}
-//                = c_{3}
+// p1(x2, x3, x4) = v2_{0} + v2_{1} * x_{1} + v2_{2} * x_{2} + v2_{3} * x_{3} + v2_{4} * x_{4} + v2_{5} * x_{5}
+//                =   1    +     0  *  a1   +     0  *  a2   +     0  *  a3   +     0  *  a4   +     0  *  a5
 //                = 1
 
-// p2(x3, x4, x5) = d_{3} + Sigma_{i = 4}^{m - 1} d_{i} * x_{i}
-//                = d_{3} + d_{4} * x_{4} + d_{5} * x_{5}
-//                = 24 + 3 * 1 - 7 * 2
+// p2(x3, x4, x5) = w2_{0} + w2_{1} * x_{1} + w2_{2} * x_{2} + w2_{3} * x_{3} + w2_{4} * x_{4} + w2_{5} * x_{5}
+//                =   0    +     0  *  a1   +  (-7)  *  a2   +     1  *  a3   +     3  *  a4   +     0  *  a5
+//                = (-7) * 2 + 1 * 24 + 3 * 1
+
+// I_{2} = {2, 3, 4, 5}
 
 /* # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                                                                                            #
@@ -94,25 +86,195 @@ import (
 #                                                                                                                                                            #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # */
 
-// t2(x) = x - r2
+// v0(r1) =   0, v0(r2) =   1 | w0(r1) =   0, w0(r2) =   0 | y0(r1) =  0, y0(r2) =  0
+// v1(r1) =   4, v1(r2) =   0 | w1(r1) =   0, w1(r2) =   0 | y1(r1) =  0, y1(r2) =  0
+// v2(r1) =   0, v2(r2) =   0 | w2(r1) =   1, w2(r2) =  -7 | y2(r1) =  0, y2(r2) =  0
+// v3(r1) =   0, v3(r2) =   0 | w3(r1) =   0, w3(r2) =   1 | y3(r1) =  1, y3(r2) =  0
+// v4(r1) =   0, v4(r2) =   0 | w4(r1) =   0, w4(r2) =   3 | y4(r1) =  0, y4(r2) =  0
+// v5(r1) =   0, v5(r2) =   0 | w5(r1) =   0, w5(r2) =   0 | y5(r1) =  0, y5(r2) =  1
 
-// v1_{3}(x) = c_{3} = 1
-// v1_{4}(x) = c_{4} = 0
-// v1_{5}(x) = c_{5} = 0
-// v1_{6}(x)         = 0
+// Use the constraints to define interpolation polynomials for the QAP.
 
-// w1_{3}(x) = d_{3} = 24
-// w1_{4}(x) = d_{4} = 3
-// w1_{5}(x) = d_{5} = -7
-// w1_{6}(x)         = 0
+//                x - r1   |                                              |
+// v0(x) = 1 * ----------- | w0(x) =                 0                    | y0(x) =          0
+//               r2 - r1   |                                              |
 
-// y1_{3}(x)         = 0
-// y1_{4}(x)         = 0
-// y1_{5}(x)         = 0
-// y1_{6}(x)         = 1
+//                x - r2   |                                              |
+// v1(x) = 4 * ----------- | w1(x) =                 0                    | y4(x) =          0
+//               r1 - r2   |                                              |
 
-// m = 2
-// d = 1
+//                         |                x - r2               x - r1   |
+// v2(x) =          0      | w2(x) = 1 * ----------- + (-7) * ----------- | y2(x) =          0
+//                         |               r1 - r2              r2 - r1   |
+
+//                         |                       x - r1                 |                x - r2
+// v3(x) =          0      | w3(x) =        1 * -----------               | y3(x) = 1 * -----------
+//                         |                      r2 - r1                 |               r1 - r2
+
+//                         |                       x - r1                 |
+// v4(x) =          0      | w4(x) =        3 * -----------               | y4(x) =          0
+//                         |                      r2 - r1                 |
+
+//                         |                                              |                x - r1
+// v5(x) =          0      | w5(x) =                 0                    | y5(x) = 1 * -----------
+//                         |                                              |               r2 - r1
+
+// The assignment variables including those that are intermediate for the
+// circuite are: a1 = 3, a2 = 2, a3 = 24, a4 = 1, and a5 = 13. To check the
+// polynomials as defined are correct the relation can be evaluated at r1 and
+// r2 to see if has the expected result of 0.
+
+// (v_{0} + \Sigma_{k = 1}^{5} a_{k} * v_{k}(x)) (w_{0} + \Sigma_{k = 1}^{5} a_{k} * w_{k}(x)) - (y_{0} + \Sigma_{k = 1}^{5} a_{k} * y_{k}(x))
+//       = (v0(x) + 3 * v1(x)) (2 * w2(x) + 24 * w3(x) + 1 * w4(x)) - (24 * y3(x) + 13 * y5(x))
+
+// at r1 = (0 + 3 * 4) (2 * 1 + 24 * 0 + 1 * 0) - (24 * 1 + 13 * 0) = (12)(2) - 24 = 0
+// at r2 = (1 + 3 * 0) (2 * (-7) + 24 * 1 + 1 * 3) - (24 * 0 + 13 * 1) = (1)(13) - 13 = 0
+
+// E2QAP creates a QAP (Quadratic Arithmetic Program) for the arithmetic
+// expression.
+func E2QAP() bool {
+
+	var err error
+
+	var order = bn256.Order
+
+	var g1 *bn256.G1
+	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var g2 *bn256.G2
+	if _, g2, err = bn256.RandomG2(rand.Reader); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var r1 = big.NewInt(3)
+	var r2 = big.NewInt(7)
+
+	var s = big.NewInt(27)
+
+	var v [5]*bn256.G1
+	var leftG []*big.Int
+
+	leftG = append(
+		leftG,
+		Interpolate(
+			s, []int64{1},
+			BasisPolynomial(order, 1, []*big.Int{r1, r2}...),
+		),
+	)
+
+	leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
+	v[0] = new(bn256.G1).ScalarMult(g1, leftG[0])
+
+	leftG = append(
+		leftG,
+		lagrange.Interpolate(
+			s, []int64{1},
+			BasisPolynomial(order, 0, []*big.Int{r1, r2}...),
+		),
+	)
+
+	leftG[1] = new(big.Int).Mul(big.NewInt(3), leftG[1])
+	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1])
+
+	leftG = append(
+		leftG,
+		big.NewInt(0),
+	)
+
+	leftG[2] = new(big.Int).Mul(big.NewInt(6), leftG[2])
+	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2])
+
+	var w [3]*bn256.G2
+	var rightG []*big.Int
+
+	rightG = append(
+		rightG,
+		big.NewInt(0),
+	)
+
+	rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
+	w[0] = new(bn256.G2).ScalarMult(g2, rightG[0])
+
+	rightG = append(
+		rightG,
+		big.NewInt(1),
+	)
+
+	rightG[1] = new(big.Int).Mul(big.NewInt(2), rightG[1])
+	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1])
+
+	rightG = append(
+		rightG,
+		big.NewInt(0),
+	)
+
+	rightG[2] = new(big.Int).Mul(big.NewInt(6), rightG[2])
+	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2])
+
+	// var y [3]*bn256.GT
+	// var outputG []*big.Int
+
+	// outputG = append(
+	// 	outputG,
+	// 	big.NewInt(0),
+	// )
+
+	// outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
+	// y[0] = new(bn256.GT).ScalarMult(gt, outputG[0])
+
+	// outputG = append(
+	// 	outputG,
+	// 	big.NewInt(0),
+	// )
+
+	// outputG[1] = new(big.Int).Mul(big.NewInt(2), outputG[1])
+	// y[1] = new(bn256.GT).ScalarMult(gt, outputG[1])
+
+	// outputG = append(
+	// 	outputG,
+	// 	big.NewInt(1),
+	// )
+
+	// outputG[2] = new(big.Int).Mul(big.NewInt(6), outputG[2])
+	// y[2] = new(bn256.GT).ScalarMult(gt, outputG[2])
+
+	var y [3]*bn256.G2
+	var outputG []*big.Int
+
+	outputG = append(
+		outputG,
+		big.NewInt(0),
+	)
+
+	outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
+	y[0] = new(bn256.G2).ScalarMult(g2, outputG[0])
+
+	outputG = append(
+		outputG,
+		big.NewInt(0),
+	)
+
+	outputG[1] = new(big.Int).Mul(big.NewInt(2), outputG[1])
+	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1])
+
+	outputG = append(
+		outputG,
+		big.NewInt(1),
+	)
+
+	outputG[2] = new(big.Int).Mul(big.NewInt(6), outputG[2])
+	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2])
+
+	var eV = new(bn256.G1).Add(v[0], new(bn256.G1).Add(v[1], v[2]))
+	var eW = new(bn256.G2).Add(w[0], new(bn256.G2).Add(w[1], w[2]))
+
+	// var eY = new(bn256.GT).Add(y[0], new(bn256.GT).Add(y[1], y[2]))
+	var eY = bn256.Pair(g1, new(bn256.G2).Add(y[0], new(bn256.G2).Add(y[1], y[2])))
+
+	return bytes.Equal(bn256.Pair(eV, eW).Marshal(), eY.Marshal())
+}
 
 // vp_{0}(r1) = 0, vp_{0}(r2) = 0, vp_{0}(s1) = 1, vp_{0}(s2) = 1,
 // vp_{1}(r1) = 1, vp_{1}(r2) = 0, vp_{1}(s1) = 0, vp_{1}(s2) = 0,
