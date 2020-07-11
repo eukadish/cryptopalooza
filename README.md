@@ -1,4 +1,35 @@
+This project is for making proof of concept code samples to try out different crypto protocols for educational purposes.
+
+  * Zero Knowledge
+  * SNARKS
+  * Homomorphic Encryption
+  * . . . 
+
+The terms and concepts in cryptography are endless as well as all the different relations between the concepts and how
+different protocols or used to build applications. To try and resolve my confusion and aggregate more complicated cocepts
+I had to scower the internet to understand Im using this repo for organization and refrence. For now it contains code for
+a proof of concept as a n educational tool to check I understand some of the building blocks to more advanced protocols
+like Zcash.
+
 # Quadratic Arithmetic Programs
+
+In an attempt to understand the technical details in the technology behind zcash and after going through several blog posts, videos, and
+tutorials it finally got to the point where I had to go from the source papers and really understand the origins of how the protocol was
+built up.
+
+Moving forward I had to string together some blog posts with the papers along with the scipr labs repo and aside from a few additional
+sources is fairly self contained in understanding how to construct snarks starting from an arithmetic circuit.
+
+To make sure I understood how the whole thing worked and nail don a working example I went through the painful process of following
+step by step the construction as described in the paper. I also hope that in the future it would be much easier to get a grasp
+for some of this stuff by just using this one repo as a resource instead of having to scower the internet like I did.
+
+But, be fair a lot more self contained projects now exist to understand everything here step by step.
+
+
+This part of the construction
+
+
 
 In working through more advanced techniques in cryptography and blockchain applications understanding this construction
 I found very important for more advanced protocols such as ZCash (which provides a great introduction to some of the key
