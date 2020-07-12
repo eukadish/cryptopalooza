@@ -70,19 +70,19 @@ import (
 
 /* # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                                                                                            #
-#          x3       x5      a3       a5     24       2                             p(a3, a4, a5) * p(a3, a4, a5) - a6 = (1) * (a3 + 3 * a4 - 7 * a5) - a6    #
-#            \     /          \     /         \     /                                                                 = (1) * (24 + 3 * 1 - 7 * 2) - 13      #
-#             \   * 7          \   * 7         \   * 7                                                                = 0                                    #
-#              \ /              \ /             \ /                                                                                                          #
-#      x4       -       a4       -       1       -                                                                                                           #
-#        \     /          \     /         \     /                                                                                                            #
-#       3 *   /          3 *   /         3 *   /                                                                                                             #
-#          \ /              \ /             \ /                                                                                                              #
-#           +                +               +                                                                                                               #
-#           |                |               |                                                                                                               #
-#           * 1              * 1             * 1                                                                                                             #
-#           |                |               |                                                                                                               #
-#    f2(x3, x4, x5)          a6              13                                                                                                              #
+#          x3       x5        a3       a5       24       2                         p(a3, a4, a5) * p(a3, a4, a5) - a6 = (1) * (a3 + 3 * a4 - 7 * a5) - a6    #
+#            \     /            \     /           \     /                                                             = (1) * (24 + 3 * 1 - 7 * 2) - 13      #
+#             \   * 7            \   * 7           \   * 7                                                            = 0                                    #
+#              \ /                \ /               \ /                                                                                                      #
+#      x4       -         a4       -         1       -                                                                                                       #
+#        \     /            \     /           \     /                                                                                                        #
+#       3 *   /            3 *   /           3 *   /                                                                                                         #
+#          \ /                \ /               \ /                                                                                                          #
+#           +                  +                 +                                                                                                           #
+#           |                  |                 |                                                                                                           #
+#           * 1                * 1               * 1                                                                                                         #
+#           |                  |                 |                                                                                                           #
+#    f2(x3, x4, x5)            a6                13                                                                                                          #
 #                                                                                                                                                            #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # */
 
@@ -370,8 +370,8 @@ func E2SQAP() bool {
 	return true
 }
 
-// E2R1CS generates the Quadratic Arithmetic Program to validate arithmetic
-//  circuits in Zero Knowledge
+// E2R1CS generates the quadratic arithmetic program to validate arithmetic
+//  circuits in zero-knowledge
 func E2R1CS() bool {
 
 	// Using the intermediate results.
