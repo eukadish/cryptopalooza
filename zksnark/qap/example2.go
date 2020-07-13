@@ -7,8 +7,6 @@ import (
 	"math/big"
 
 	"github.com/cloudflare/bn256"
-
-	"github.com/eugenekadish/cryptopalooza/zksnark/qap/lagrange"
 )
 
 // f(x1, x2, x3, x4) = 4 * x1 * x2 - 7 * x2 + 3 * x4
@@ -169,7 +167,7 @@ func E2QAP() bool {
 
 	leftG = append(
 		leftG,
-		lagrange.Interpolate(
+		Interpolate(
 			s, []int64{1},
 			BasisPolynomial(order, 0, []*big.Int{r1, r2}...),
 		), // v1(s)

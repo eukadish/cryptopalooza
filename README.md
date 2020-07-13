@@ -1,65 +1,34 @@
-This project is for making proof of concept code samples to try out different crypto protocols for educational purposes.
+Repo for educational purposes to build example constructions used in zero-knowledge protocols. The papers:
 
-  * Zero Knowledge
-  * SNARKS
-  * Homomorphic Encryption
-  * . . . 
+  * https://eprint.iacr.org/2012/215.pdf
+  * https://eprint.iacr.org/2013/507.pdf
 
-The terms and concepts in cryptography are endless as well as all the different relations between the concepts and how
-different protocols or used to build applications. To try and resolve my confusion and aggregate more complicated cocepts
-I had to scower the internet to understand Im using this repo for organization and refrence. For now it contains code for
-a proof of concept as a n educational tool to check I understand some of the building blocks to more advanced protocols
-like Zcash.
+and these blog posts:
 
-# Quadratic Arithmetic Programs
+  * https://electriccoin.co/blog/snark-explain
+  * https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649
 
-In an attempt to understand the technical details in the technology behind zcash and after going through several blog posts, videos, and
-tutorials it finally got to the point where I had to go from the source papers and really understand the origins of how the protocol was
-built up.
+describe how to generate a zero-knowledge proof for any arithmetic expression. This is done by creating first a SNARK
+(Succinct Non-interactivity ARgument of Knowledge), which is derived from a QAP (Quadratic Arithmetic Program). The QAP
+is the tricky part, so in each example is an arithmetic expression from which one is derived with the steps detailed in
+the comments. They can also be used to cross reference with the documentation to make sure all the notation, indices,
+polynomial interpolation, etc. is consistent.
 
-Moving forward I had to string together some blog posts with the papers along with the scipr labs repo and aside from a few additional
-sources is fairly self contained in understanding how to construct snarks starting from an arithmetic circuit.
+To better understand the derivations on why QAPs and the example code work some basic facts about polynomial algebra are
+useful to get a refresher on:
 
-To make sure I understood how the whole thing worked and nail don a working example I went through the painful process of following
-step by step the construction as described in the paper. I also hope that in the future it would be much easier to get a grasp
-for some of this stuff by just using this one repo as a resource instead of having to scower the internet like I did.
+  * https://en.wikipedia.org/wiki/Lagrange_polynomial
+  * https://en.wikipedia.org/wiki/Polynomial_remainder_theorem
 
-But, be fair a lot more self contained projects now exist to understand everything here step by step.
+Also, a simplifying technique of R1CS (Rank-1 Constraint Systems) to generate QAPs is shown in the comments and compared
+with the derived QAP. The code verifies the QAP is correct by checking two sides of an equation with quadratic root
+detection.
 
+Also included is an example for zero-knowledge set membership:
 
-This part of the construction
+  * https://www.ingwb.com/media/2667856/zero-knowledge-set-membership.pdf
 
+More useful links on the topic:
 
-
-In working through more advanced techniques in cryptography and blockchain applications understanding this construction
-I found very important for more advanced protocols such as ZCash (which provides a great introduction to some of the key
-mathematical insights) and the like.
-
-However, when getting into some of the details involved with applying this technology many online resources mundge
-together this fundamental work with more complicated techniques for the compiler construction and tolling built out by
-scipr.
-
-My goal here was to break out the work not worrying about efficiency or anything else within the construction and just
-try nail down the concepts step by step along with more examples.
-
-In addition I wanted to document here some of the more complex mathematical definitions for theunderlying concepts and
-provide an easier to understand an intuitive feel to make it more approachable for the more day to day work.
-
-## Definitions
-
-I think something the paper lacks which confused me during it's initial interpretation is figuring out how to convert
-a general arithmetic expression into one that is a product of expressions, so I look to provide better examples in the
-sample functions here.
-
-In addition the final construction for the ZK part is then fairly straightforward and generic to all such expressions.
-
-
-
-## NIZK
-
-Converting the QAP to a NIZK
-
-## ZKSM
-
-A protocol with some trusted setup to allow a trusted entity to prove
-they are in possesion of a value without revealing it.
+  * https://github.com/scipr-lab/libsnark
+  * https://github.com/matter-labs/awesome-zero-knowledge-proofs

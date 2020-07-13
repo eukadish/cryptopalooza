@@ -1,6 +1,7 @@
 package zksm
 
 import (
+	"bytes"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -8,7 +9,8 @@ import (
 	"github.com/cloudflare/bn256"
 )
 
-// E1QAP provided a pedersen commitment, generated a proof and verifies it.
+// E1SM provides a pedersen commitment, generated a zero-knowledge proof of set
+// membership, and verifies it.
 func E1SM() bool {
 
 	var err error
@@ -27,27 +29,46 @@ func E1SM() bool {
 		fmt.Printf("error generating field element %v \n", err)
 	}
 
-	var h *bn256.G2
-	if _, h, err = bn256.RandomG2(rand.Reader); err != nil {
+	var h *bn256.G1
+	if _, h, err = bn256.RandomG1(rand.Reader); err != nil {
 		fmt.Printf("error generating group element %v \n", err)
 	}
 
 	var x *big.Int
-	var g *bn256.G2
 
-	if x, _, err = bn256.RandomG2(rand.Reader); err != nil {
+	var g1 *bn256.G1
+	var g2 *bn256.G2
+
+	if x, _, err = bn256.RandomG1(rand.Reader); err != nil {
 		fmt.Printf("error generating group element %v \n", err)
 	}
 
-	if _, g, err = bn256.RandomG2(rand.Reader); err != nil {
+	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
 		fmt.Printf("error generating group element %v \n", err)
 	}
 
-	var y = new(bn256.G2).ScalarMult(g, x)
+	if _, g2, err = bn256.RandomG2(rand.Reader); err != nil {
+		fmt.Printf("error generating group element %v \n", err)
+	}
 
-	var C = new(bn256.G2).Add(
-		new(bn256.G2).ScalarMult(g, delta),
-		new(bn256.G2).ScalarMult(h, gamma),
+	// var ok bool
+	// var g interface{} = g1.Marshal()
+
+	// if *g2, ok = g.(bn256.G2); !ok {
+	// 	fmt.Printf("error casting group element %t \n", ok)
+	// }
+
+	// fmt.Printf(" - G1 = %v", g1.String()[0:18])
+	// fmt.Printf(" - G2 = %v", g2.String()[0:18])
+
+	fmt.Printf(" - G1 = %v \n", g1)
+	fmt.Printf(" - G2 = %v \n", g2)
+
+	var y = new(bn256.G2).ScalarMult(g2, x)
+
+	var C = new(bn256.G1).Add(
+		new(bn256.G1).ScalarMult(g1, delta),
+		new(bn256.G1).ScalarMult(h, gamma),
 	)
 
 	var sigs = make(map[int64]*bn256.G1)
@@ -67,7 +88,7 @@ func E1SM() bool {
 		var elem int64
 		for _, elem = range s {
 			expo = new(big.Int).ModInverse(new(big.Int).Add(big.NewInt(elem), x), order)
-			sigs[elem] = new(bn256.G1).ScalarMult(g, expo)
+			sigs[elem] = new(bn256.G1).ScalarMult(g1, expo)
 		}
 	}
 
@@ -95,20 +116,14 @@ func E1SM() bool {
 		fmt.Printf("error generating field element %v \n", err)
 	}
 
-	var gRaw interface{}
-	gRaw = g.Marshal()
-
-	var g0 *bn256.G1
-	g0, _ = gRaw.(*bn256.G1)
-
 	var a = new(bn256.GT).Add(
-		new(bn256.GT).ScalarMult(bn256.Pair(V, g), new(big.Int).Sub(order, s)),
-		new(bn256.GT).ScalarMult(bn256.Pair(g0, g), t),
+		new(bn256.GT).ScalarMult(bn256.Pair(V, g2), new(big.Int).Sub(order, s)),
+		new(bn256.GT).ScalarMult(bn256.Pair(g1, g2), t),
 	)
 
-	var D = new(bn256.GT).Add(
-		new(bn256.GT).ScalarMult(s, g),
-		new(bn256.GT).ScalarMult(m, h),
+	var D = new(bn256.G1).Add(
+		new(bn256.G1).ScalarMult(g1, s),
+		new(bn256.G1).ScalarMult(h, m),
 	)
 
 	// Verifier
@@ -122,12 +137,24 @@ func E1SM() bool {
 	var zDelta = new(big.Int).Sub(s, new(big.Int).Mul(delta, c))
 	var zGamma = new(big.Int).Sub(m, new(big.Int).Mul(gamma, c))
 
-	var left = new(bn256.GT).Add(
-		new(bn256.GT).ScalarMult(c, C),
-		new(bn256.GT).Add(
-			new(bn256.GT).ScalarMult(zGamma, h),
-			new(bn256.GT).ScalarMult(zDelta, g),
+	var left = new(bn256.G1).Add(
+		new(bn256.G1).ScalarMult(C, c),
+		new(bn256.G1).Add(
+			new(bn256.G1).ScalarMult(h, zGamma),
+			new(bn256.G1).ScalarMult(g1, zDelta),
 		),
 	)
 
+	var right = new(bn256.GT).Add(
+		new(bn256.GT).ScalarMult(bn256.Pair(V, y), c),
+		new(bn256.GT).Add(
+			new(bn256.GT).ScalarMult(bn256.Pair(V, g2), new(big.Int).Sub(order, zDelta)),
+			new(bn256.GT).ScalarMult(bn256.Pair(g1, g2), new(big.Int).Sub(order, zTau)),
+		),
+	)
+
+	fmt.Println(bytes.Equal(D.Marshal(), left.Marshal()))
+	fmt.Println(bytes.Equal(a.Marshal(), right.Marshal()))
+
+	return true
 }
