@@ -24,50 +24,31 @@ func E1SM() bool {
 		fmt.Printf("error generating field element %v \n", err)
 	}
 
-	var delta *big.Int
-	if delta, err = rand.Int(rand.Reader, order); err != nil {
-		fmt.Printf("error generating field element %v \n", err)
-	}
-
 	var h *bn256.G1
 	if _, h, err = bn256.RandomG1(rand.Reader); err != nil {
 		fmt.Printf("error generating group element %v \n", err)
 	}
 
 	var x *big.Int
-
-	var g1 *bn256.G1
-	var g2 *bn256.G2
-
-	if x, _, err = bn256.RandomG1(rand.Reader); err != nil {
+	if x, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("error generating group element %v \n", err)
 	}
 
+	var g1 *bn256.G1
 	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
 		fmt.Printf("error generating group element %v \n", err)
 	}
 
+	var g2 *bn256.G2
 	if _, g2, err = bn256.RandomG2(rand.Reader); err != nil {
 		fmt.Printf("error generating group element %v \n", err)
 	}
 
-	// var ok bool
-	// var g interface{} = g1.Marshal()
-
-	// if *g2, ok = g.(bn256.G2); !ok {
-	// 	fmt.Printf("error casting group element %t \n", ok)
-	// }
-
-	// fmt.Printf(" - G1 = %v", g1.String()[0:18])
-	// fmt.Printf(" - G2 = %v", g2.String()[0:18])
-
-	fmt.Printf(" - G1 = %v \n", g1)
-	fmt.Printf(" - G2 = %v \n", g2)
-
 	var y = new(bn256.G2).ScalarMult(g2, x)
 
+	var delta int64 = 15
 	var C = new(bn256.G1).Add(
-		new(bn256.G1).ScalarMult(g1, delta),
+		new(bn256.G1).ScalarMult(g1, big.NewInt(delta)),
 		new(bn256.G1).ScalarMult(h, gamma),
 	)
 
@@ -92,6 +73,16 @@ func E1SM() bool {
 		}
 	}
 
+	// NOTE: For application purposes, this data is ideal for submitting to an
+	// immutable log such as a Blockchain. It is critical the commitment happens
+	// before the prover runs, so that this sequence is captured, for regulatory
+	// purposes etc.
+
+	// The setup dat can also be used as a type of configuration fo working with
+	// the proof data and in fact stamping configuration in timesequences was
+	// the original description for Paxos as described here:
+	//  https://www.youtube.com/watch?v=JEpsBg0AO6o
+
 	// Prover
 
 	var tau *big.Int
@@ -99,7 +90,7 @@ func E1SM() bool {
 		fmt.Printf("error generating field element %v \n", err)
 	}
 
-	var V = new(bn256.G1).ScalarMult(sigs[15], tau)
+	var V = new(bn256.G1).ScalarMult(sigs[delta], tau)
 
 	var s *big.Int
 	if s, err = rand.Int(rand.Reader, order); err != nil {
@@ -133,9 +124,16 @@ func E1SM() bool {
 		fmt.Printf("error generating field element %v \n", err)
 	}
 
-	var zTau = new(big.Int).Sub(t, new(big.Int).Mul(tau, c))
-	var zDelta = new(big.Int).Sub(s, new(big.Int).Mul(delta, c))
-	var zGamma = new(big.Int).Sub(m, new(big.Int).Mul(gamma, c))
+	// var zTau = new(big.Int).Sub(t, new(big.Int).Mul(tau, c))
+	var zTau = new(big.Int).Add(t, new(big.Int).Sub(order, new(big.Int).Mul(tau, c)))
+	// var zGamma = new(big.Int).Sub(m, new(big.Int).Mul(gamma, c))
+	var zGamma = new(big.Int).Add(m, new(big.Int).Sub(order, new(big.Int).Mul(gamma, c)))
+	// var zDelta = new(big.Int).Sub(s, new(big.Int).Mul(big.NewInt(delta), c))
+	var zDelta = new(big.Int).Add(s, new(big.Int).Sub(order, new(big.Int).Mul(big.NewInt(delta), c)))
+
+	c = new(big.Int).Mod(c, order)
+	zGamma = new(big.Int).Mod(zGamma, order)
+	zDelta = new(big.Int).Mod(zDelta, order)
 
 	var left = new(bn256.G1).Add(
 		new(bn256.G1).ScalarMult(C, c),
@@ -145,16 +143,51 @@ func E1SM() bool {
 		),
 	)
 
+	// fmt.Println(
+	// 	new(big.Int).Mod(
+	// 		new(big.Int).Sub(t,
+	// 			new(big.Int).Mul(
+	// 				new(big.Int).Mul(s, tau),
+	// 				new(big.Int).ModInverse(new(big.Int).Add(x, big.NewInt(delta)), order),
+	// 			),
+	// 		),
+	// 		order,
+	// 	),
+	// )
+
+	// fmt.Println(
+	// 	new(big.Int).Mod(
+	// 		new(big.Int).Add(
+	// 			new(big.Int).Sub(
+	// 				new(big.Int).Mul(c,
+	// 					new(big.Int).Mul(tau,
+	// 						new(big.Int).Mul(x, new(big.Int).ModInverse(new(big.Int).Add(x, big.NewInt(delta)), order)),
+	// 					),
+	// 				),
+	// 				new(big.Int).Mul(tau,
+	// 					new(big.Int).Mul(zDelta, new(big.Int).ModInverse(new(big.Int).Add(x, big.NewInt(delta)), order)),
+	// 				),
+	// 			),
+	// 			zTau,
+	// 		),
+	// 		order,
+	// 	),
+	// )
+
+	c = new(big.Int).Mod(c, order)
+	zDelta = new(big.Int).Mod(zDelta, order)
+	zTau = new(big.Int).Mod(zTau, order)
+
 	var right = new(bn256.GT).Add(
 		new(bn256.GT).ScalarMult(bn256.Pair(V, y), c),
 		new(bn256.GT).Add(
 			new(bn256.GT).ScalarMult(bn256.Pair(V, g2), new(big.Int).Sub(order, zDelta)),
-			new(bn256.GT).ScalarMult(bn256.Pair(g1, g2), new(big.Int).Sub(order, zTau)),
+			new(bn256.GT).ScalarMult(bn256.Pair(g1, g2), zTau),
 		),
 	)
 
-	fmt.Println(bytes.Equal(D.Marshal(), left.Marshal()))
-	fmt.Println(bytes.Equal(a.Marshal(), right.Marshal()))
+	// fmt.Println(bytes.Equal(D.Marshal(), left.Marshal()))
+	// fmt.Println(bytes.Equal(a.Marshal(), right.Marshal()))
 
-	return true
+	return bytes.Equal(D.Marshal(), left.Marshal()) && bytes.Equal(a.Marshal(), right.Marshal())
 }
