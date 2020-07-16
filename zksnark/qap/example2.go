@@ -98,7 +98,7 @@ import (
 //               r2 - r1   |                                              |
 
 //                x - r2   |                                              |
-// v1(x) = 4 * ----------- | w1(x) =                 0                    | y4(x) =          0
+// v1(x) = 4 * ----------- | w1(x) =                 0                    | y1(x) =          0
 //               r1 - r2   |                                              |
 
 //                         |                x - r2               x - r1   |
@@ -118,15 +118,20 @@ import (
 //                         |                                              |               r2 - r1
 
 // The assignment variables including those that are intermediate for the
-// circuite are: a1 = 3, a2 = 2, a3 = 24, a4 = 1, and a5 = 13. To check the
+// circuit are: a1 = 3, a2 = 2, a3 = 24, a4 = 1, and a5 = 13. To check the
 // polynomials as defined are correct the relation can be evaluated at r1 and
 // r2 to see if has the expected result of 0.
 
-// (v_{0} + \Sigma_{k = 1}^{5} a_{k} * v_{k}(x)) (w_{0} + \Sigma_{k = 1}^{5} a_{k} * w_{k}(x)) - (y_{0} + \Sigma_{k = 1}^{5} a_{k} * y_{k}(x))
-//       = (v0(x) + 3 * v1(x)) (2 * w2(x) + 24 * w3(x) + 1 * w4(x)) - (24 * y3(x) + 13 * y5(x))
+// (v0 + v1 * a1 + v2 * a2 + v3 * a3 + v4 * a4 + v5 * a5) * (w0 + w1 * a1 + w2 * a2 + w3 * a3 + w4 * a4 + w5 * a5)
+//                         = (y0 + y1 * a1 + y2 * a2 + y3 * a3 + y4 * a4)
 
-// at r1 = (0 + 3 * 4) (2 * 1 + 24 * 0 + 1 * 0) - (24 * 1 + 13 * 0) = (12)(2) - 24 = 0
-// at r2 = (1 + 3 * 0) (2 * (-7) + 24 * 1 + 1 * 3) - (24 * 0 + 13 * 1) = (1)(13) - 13 = 0
+// at r1  - > (0 + 4 * 3 + 0 * 2 + 0 * 24 + 0 * 1 + 0 * 13) * (0 + 0 * 3 + 1 * 2 + 0 * 24 + 0 * 1 + 0 * 13)
+//        - >                    = (0 + 0 * 3 + 0 * 2 + 1 * 24 + 0 * 1 + 0 * 13)
+//        - >             12 * 2 = 24
+
+// at r2  - > (1 + 0 * 3 + 0 * 2 + 0 * 24 + 0 * 1 + 0 * 13) (0 + 0 * 3 + (-7) * 2 + 1 * 24 + 3 * 1 + 0 * 13)
+//        - >                    = (0 + 0 * 3 + 0 * 2 + 0 * 24 + 0 * 1 + 1 * 13)
+//        - >             1 * 13 = 13
 
 // E2QAP defines a QAP for the arithmetic expression, uses it to create a SNARK,
 // and evaluates it.
@@ -135,6 +140,9 @@ func E2QAP() bool {
 	var err error
 
 	var order = bn256.Order
+	// var order = bn256.Order.Set(big.NewInt(11))
+	// var order = bn256.Order.Set(big.NewInt(23))
+	// var order = bn256.Order.Set(big.NewInt(997))
 
 	var g1 *bn256.G1
 	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
@@ -146,10 +154,38 @@ func E2QAP() bool {
 		fmt.Printf("parameter generation %v", err)
 	}
 
-	var r1 = big.NewInt(3)
-	var r2 = big.NewInt(7)
+	var r1 *big.Int // big.NewInt(3)
+	if r1, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+	// r1 = big.NewInt(3)
 
-	var s = big.NewInt(27)
+	var r2 *big.Int // big.NewInt(7)
+	if r2, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+	// r1 = big.NewInt(7)
+
+	var s *big.Int // big.NewInt(27)
+	if s, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+	// s = big.NewInt(5)
+
+	// var betaV *big.Int
+	// if betaV, err = rand.Int(rand.Reader, order); err != nil {
+	// 	fmt.Printf("parameter generation %v", err)
+	// }
+
+	// var betaW *big.Int
+	// if betaW, err = rand.Int(rand.Reader, order); err != nil {
+	// 	fmt.Printf("parameter generation %v", err)
+	// }
+
+	// var betaY *big.Int
+	// if betaY, err = rand.Int(rand.Reader, order); err != nil {
+	// 	fmt.Printf("parameter generation %v", err)
+	// }
 
 	var v [6]*bn256.G1
 	var leftG []*big.Int
@@ -162,51 +198,63 @@ func E2QAP() bool {
 		), // v0(s)
 	)
 
-	leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
+	// leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
+	leftG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), leftG[0]), order)
+
 	v[0] = new(bn256.G1).ScalarMult(g1, leftG[0]) // E(v0(s))
 
 	leftG = append(
 		leftG,
 		Interpolate(
-			s, []int64{1},
+			s, []int64{4},
 			BasisPolynomial(order, 0, []*big.Int{r1, r2}...),
 		), // v1(s)
 	)
 
-	leftG[1] = new(big.Int).Mul(big.NewInt(3), leftG[1]) // a1 = 3
-	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1])        // E(a1 * v1(s))
+	// leftG[1] = new(big.Int).Mul(big.NewInt(3), leftG[1])                          // a1 = 3
+	leftG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(3), leftG[1]), order) // a1 = 3
+
+	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1]) // E(a1 * v1(s))
 
 	leftG = append(
 		leftG,
 		big.NewInt(0), // v2(s)
 	)
 
-	leftG[2] = new(big.Int).Mul(big.NewInt(2), leftG[2]) // a2 = 2
-	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2])        // E(a2 * v2(s))
+	// leftG[2] = new(big.Int).Mul(big.NewInt(2), leftG[2])                          // a2 = 2
+	leftG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(2), leftG[2]), order) // a2 = 2
+
+	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2]) // E(a2 * v2(s))
 
 	leftG = append(
 		leftG,
 		big.NewInt(0), // v3(s)
 	)
 
-	leftG[3] = new(big.Int).Mul(big.NewInt(24), leftG[3]) // a3 = 24
-	v[3] = new(bn256.G1).ScalarMult(g1, leftG[3])         // E(a3 * v3(s))
+	// leftG[3] = new(big.Int).Mul(big.NewInt(24), leftG[3])                          // a3 = 24
+	leftG[3] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(24), leftG[3]), order) // a3 = 24
+
+	v[3] = new(bn256.G1).ScalarMult(g1, leftG[3]) // E(a3 * v3(s))
 
 	leftG = append(
 		leftG,
 		big.NewInt(0), // v4(s)
 	)
 
-	leftG[4] = new(big.Int).Mul(big.NewInt(1), leftG[4]) // a4 = 1
-	v[4] = new(bn256.G1).ScalarMult(g1, leftG[4])        // E(a4 * v4(s))
+	// leftG[4] = new(big.Int).Mul(big.NewInt(1), leftG[4])                          // a4 = 1
+	leftG[4] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), leftG[4]), order) // a4 = 1
+
+	v[4] = new(bn256.G1).ScalarMult(g1, leftG[4]) // E(a4 * v4(s))
 
 	leftG = append(
 		leftG,
 		big.NewInt(0), // v5(s)
 	)
 
-	leftG[5] = new(big.Int).Mul(big.NewInt(13), leftG[5]) // a4 = 13
-	v[5] = new(bn256.G1).ScalarMult(g1, leftG[5])         // E(a5 * v5(s))
+	// leftG[5] = new(big.Int).Mul(big.NewInt(13), leftG[5])                          // a5 = 13
+	leftG[5] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(13), leftG[5]), order) // a5 = 13
+
+	v[5] = new(bn256.G1).ScalarMult(g1, leftG[5]) // E(a5 * v5(s))
 
 	var w [6]*bn256.G2
 	var rightG []*big.Int
@@ -216,7 +264,9 @@ func E2QAP() bool {
 		big.NewInt(0), // w0(s)
 	)
 
-	rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
+	// rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
+	rightG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), rightG[0]), order)
+
 	w[0] = new(bn256.G2).ScalarMult(g2, rightG[0]) // E(w0(s))
 
 	rightG = append(
@@ -224,8 +274,10 @@ func E2QAP() bool {
 		big.NewInt(0), // w1(s)
 	)
 
-	rightG[1] = new(big.Int).Mul(big.NewInt(3), rightG[1]) // a1 = 3
-	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1])         // E(a1 * w1(s))
+	// rightG[1] = new(big.Int).Mul(big.NewInt(3), rightG[1])                          // a1 = 3
+	rightG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(3), rightG[1]), order) // a1 = 3
+
+	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1]) // E(a1 * w1(s))
 
 	rightG = append(
 		rightG,
@@ -236,8 +288,10 @@ func E2QAP() bool {
 		), // w2(s)
 	)
 
-	rightG[2] = new(big.Int).Mul(big.NewInt(2), rightG[2]) // a2 = 2
-	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2])         // E(a2 * w2(s))
+	// rightG[2] = new(big.Int).Mul(big.NewInt(2), rightG[2])                          // a2 = 2
+	rightG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(2), rightG[2]), order) // a2 = 2
+
+	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2]) // E(a2 * w2(s))
 
 	rightG = append(
 		rightG,
@@ -247,8 +301,10 @@ func E2QAP() bool {
 		), // w3(s)
 	)
 
-	rightG[3] = new(big.Int).Mul(big.NewInt(24), rightG[3]) // a3 = 24
-	w[3] = new(bn256.G2).ScalarMult(g2, rightG[3])          // E(a3 * v3(s))
+	// rightG[3] = new(big.Int).Mul(big.NewInt(24), rightG[3])                          // a3 = 24
+	rightG[3] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(24), rightG[3]), order) // a3 = 24
+
+	w[3] = new(bn256.G2).ScalarMult(g2, rightG[3]) // E(a3 * v3(s))
 
 	rightG = append(
 		rightG,
@@ -258,16 +314,20 @@ func E2QAP() bool {
 		), // w4(s)
 	)
 
-	rightG[4] = new(big.Int).Mul(big.NewInt(1), rightG[4]) // a4 = 1
-	w[4] = new(bn256.G2).ScalarMult(g2, rightG[4])         // E(a4 * w4(s))
+	// rightG[4] = new(big.Int).Mul(big.NewInt(1), rightG[4])                          // a4 = 1
+	rightG[4] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), rightG[4]), order) // a4 = 1
+
+	w[4] = new(bn256.G2).ScalarMult(g2, rightG[4]) // E(a4 * w4(s))
 
 	rightG = append(
 		rightG,
 		big.NewInt(0), // w5(s)
 	)
 
-	rightG[5] = new(big.Int).Mul(big.NewInt(13), rightG[5]) // a4 = 13
-	w[5] = new(bn256.G2).ScalarMult(g2, rightG[5])          // E(a5 * w5(s))
+	// rightG[5] = new(big.Int).Mul(big.NewInt(13), rightG[5])                          // a5 = 13
+	rightG[5] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(13), rightG[5]), order) // a5 = 13
+
+	w[5] = new(bn256.G2).ScalarMult(g2, rightG[5]) // E(a5 * w5(s))
 
 	var y [6]*bn256.G2
 	var outputG []*big.Int
@@ -277,43 +337,58 @@ func E2QAP() bool {
 		big.NewInt(0), // y0(s)
 	)
 
-	outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
-	y[0] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[0])) // E(-y0(s))
+	// outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
+	outputG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), outputG[0]), order)
+
+	y[0] = new(bn256.G2).ScalarMult(g2, outputG[0]) // E(y0(s))
+	// y[0] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[0])) // E(-y0(s))
 
 	outputG = append(
 		outputG,
 		big.NewInt(0), // y1(s)
 	)
 
-	outputG[1] = new(big.Int).Mul(big.NewInt(3), outputG[1])                 // a1 = 3
-	y[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[1])) // E(-a1 * v1(s))
+	// outputG[1] = new(big.Int).Mul(big.NewInt(3), outputG[1])                          // a1 = 3
+	outputG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(3), outputG[1]), order) // a1 = 3
+
+	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1]) // E(a1 * v1(s))
+	// y[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[1])) // E(-a1 * v1(s))
 
 	outputG = append(
 		outputG,
 		big.NewInt(0), // y2(s)
 	)
 
-	outputG[2] = new(big.Int).Mul(big.NewInt(2), outputG[2])                 // a2 = 2
-	y[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[2])) // E(-a2 * y2(s))
+	// outputG[2] = new(big.Int).Mul(big.NewInt(2), outputG[2])                          // a2 = 2
+	outputG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(2), outputG[2]), order) // a2 = 2
+
+	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2]) // E(a2 * y3(s))
+	// y[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[2])) // E(-a2 * y2(s))
 
 	outputG = append(
 		outputG,
 		Interpolate(
-			s, []int64{0},
+			s, []int64{1},
 			BasisPolynomial(order, 0, []*big.Int{r1, r2}...),
 		), // y3(s)
 	)
 
-	outputG[3] = new(big.Int).Mul(big.NewInt(24), outputG[3])                // a3 = 24
-	y[3] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[3])) // E(-a3 * y3(s))
+	// outputG[3] = new(big.Int).Mul(big.NewInt(24), outputG[3])                          // a3 = 24
+	outputG[3] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(24), outputG[3]), order) // a3 = 24
+
+	y[3] = new(bn256.G2).ScalarMult(g2, outputG[3]) // E(a3 * y3(s))
+	// y[3] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[3])) // E(-a3 * y3(s))
 
 	outputG = append(
 		outputG,
 		big.NewInt(0), // y4(s)
 	)
 
-	outputG[4] = new(big.Int).Mul(big.NewInt(3), outputG[4])                 // a4 = 1
-	y[4] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[4])) // E(-a4 * y4(s))
+	// outputG[4] = new(big.Int).Mul(big.NewInt(3), outputG[4])                          // a4 = 1
+	outputG[4] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), outputG[4]), order) // a4 = 1
+
+	y[4] = new(bn256.G2).ScalarMult(g2, outputG[4]) // E(a4 * y4(s))
+	// y[4] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[4])) // E(-a4 * y4(s))
 
 	outputG = append(
 		outputG,
@@ -323,11 +398,54 @@ func E2QAP() bool {
 		), // y5(s)
 	)
 
-	outputG[5] = new(big.Int).Mul(big.NewInt(13), outputG[5])                // a5 = 2
-	y[5] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[5])) // E(-a5 * y5(s))
+	// outputG[5] = new(big.Int).Mul(big.NewInt(13), outputG[5])                          // a5 = 13
+	outputG[5] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(13), outputG[5]), order) // a5 = 13
 
-	// E(v0) + E(a1 * v1) + E(a2 * v2) + E(a3 * v3) + E(a4 * v4) + E(a5 * v5)
-	//     = E(v0 + a1 * v1 + a2 * v2 + a3 * v3 + a4 * v4 + a5 * v5)
+	y[5] = new(bn256.G2).ScalarMult(g2, outputG[5]) // E(a5 * y5(s))
+	// y[5] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[5])) // E(-a5 * y5(s))
+
+	var t = new(big.Int).Mod(
+		new(big.Int).Mul(
+			new(big.Int).Sub(s, r1),
+			new(big.Int).Sub(s, r2),
+		),
+		order,
+	)
+
+	var term1 = new(big.Int).Add(
+		new(big.Int).Add(leftG[0], leftG[1]),
+		new(big.Int).Add(
+			new(big.Int).Add(leftG[2], leftG[3]),
+			new(big.Int).Add(leftG[4], leftG[5]),
+		),
+	)
+
+	var term2 = new(big.Int).Add(
+		new(big.Int).Add(rightG[0], rightG[1]),
+		new(big.Int).Add(
+			new(big.Int).Add(rightG[2], rightG[3]),
+			new(big.Int).Add(rightG[4], rightG[5]),
+		),
+	)
+
+	var term3 = new(big.Int).Add(
+		new(big.Int).Add(outputG[0], outputG[1]),
+		new(big.Int).Add(
+			new(big.Int).Add(outputG[2], outputG[3]),
+			new(big.Int).Add(outputG[4], outputG[5]),
+		),
+	)
+
+	var h = new(big.Int).Mod(
+		new(big.Int).Mul(
+			new(big.Int).Sub(
+				new(big.Int).Mul(term1, term2), term3,
+			),
+			new(big.Int).ModInverse(t, order),
+		),
+		order,
+	)
+
 	var eV = new(bn256.G1).Add(
 		new(bn256.G1).Add(v[0], v[1]),
 		new(bn256.G1).Add(
@@ -336,8 +454,6 @@ func E2QAP() bool {
 		),
 	)
 
-	// E(w0) + E(a1 * w1) + E(a2 * w2) + E(a3 * w3) + E(a4 * w4) + E(a5 * w5)
-	//     = E(v0 + a1 * w1 + a2 * w2 + a3 * w3 + a4 * w4 + a5 * w5)
 	var eW = new(bn256.G2).Add(
 		new(bn256.G2).Add(w[0], w[1]),
 		new(bn256.G2).Add(
@@ -346,7 +462,64 @@ func E2QAP() bool {
 		),
 	)
 
-	// var eY = new(bn256.GT).Add(y[0], new(bn256.GT).Add(y[1], y[2]))
+	// fmt.Println(
+	// 	new(big.Int).Mod(
+	// 		new(big.Int).Sub(
+	// 			new(big.Int).Mul(
+	// 				term1, term2,
+	// 			),
+	// 			term3,
+	// 		),
+	// 		order,
+	// 	),
+	// )
+
+	// fmt.Println(
+	// 	new(big.Int).Mod(
+	// 		new(big.Int).Add(
+	// 			new(big.Int).Add(leftG[0], leftG[1]),
+	// 			new(big.Int).Add(
+	// 				new(big.Int).Add(leftG[2], leftG[3]),
+	// 				new(big.Int).Add(leftG[4], leftG[5]),
+	// 			),
+	// 		),
+	// 		order,
+	// 	),
+	// )
+
+	// fmt.Println(
+	// 	new(big.Int).Mod(
+	// 		new(big.Int).Add(
+	// 			new(big.Int).Add(rightG[0], rightG[1]),
+	// 			new(big.Int).Add(
+	// 				new(big.Int).Add(rightG[2], rightG[3]),
+	// 				new(big.Int).Add(rightG[4], rightG[5]),
+	// 			),
+	// 		),
+	// 		order,
+	// 	),
+	// )
+
+	// fmt.Println(
+	// 	new(big.Int).Mod(
+	// 		new(big.Int).Add(
+	// 			new(big.Int).Add(outputG[0], outputG[1]),
+	// 			new(big.Int).Add(
+	// 				new(big.Int).Add(outputG[2], outputG[3]),
+	// 				new(big.Int).Add(outputG[4], outputG[5]),
+	// 			),
+	// 		),
+	// 		order,
+	// 	),
+	// )
+
+	// fmt.Println(
+	// 	new(big.Int).Mod(
+	// 		new(big.Int).Mul(t, h),
+	// 		order,
+	// 	),
+	// )
+
 	var eY = bn256.Pair(
 		g1,
 		new(bn256.G2).Add(
@@ -358,7 +531,17 @@ func E2QAP() bool {
 		),
 	)
 
-	return bytes.Equal(bn256.Pair(eV, eW).Marshal(), eY.Marshal())
+	var eT = new(bn256.G1).ScalarMult(g1, t)
+	var eH = new(bn256.G2).ScalarMult(g2, h)
+
+	var left = new(bn256.GT).Add(
+		bn256.Pair(eV, eW),
+		new(bn256.GT).Neg(eY),
+	)
+
+	var right = bn256.Pair(eT, eH)
+
+	return bytes.Equal(left.Marshal(), right.Marshal())
 }
 
 // E2SQAP defines a strong QAP for the arithmetic expression, uses it to create

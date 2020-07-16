@@ -18,7 +18,7 @@ func main() {
 	fmt.Printf(" Example 2 QAP         %t \n", qap.E2QAP())
 	fmt.Printf(" Example 2 R1CS        %t \n", qap.E2R1CS())
 
-	fmt.Printf(" Example 3 QAP         %t \n", qap.E2QAP())
+	fmt.Printf(" Example 3 QAP         %t \n", qap.E3QAP())
 	fmt.Printf(" Example 3 R1CS        %t \n", qap.E3R1CS())
 
 	fmt.Printf(" Set Membership        %t \n", zksm.E1SM())

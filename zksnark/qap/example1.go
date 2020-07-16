@@ -273,34 +273,48 @@ func E1SQAP() bool {
 		fmt.Printf("parameter generation %v", err)
 	}
 
-	var r1 = big.NewInt(2)
-	var r2 = big.NewInt(3)
+	var r *big.Int // big.NewInt(10)
+	if r, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
 
-	var s1 = big.NewInt(5)
-	var s2 = big.NewInt(7)
+	var r1 *big.Int // big.NewInt(2)
+	if r1, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
 
-	// var r = big.NewInt(10)
-	// var s = big.NewInt(22)
+	var r2 *big.Int // big.NewInt(3)
+	if r2, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
 
-	var r, s = big.NewInt(10), big.NewInt(22)
+	var s *big.Int // big.NewInt(22)
+	if s, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
 
-	// var alpha *big.Int
-	// if alpha, err = rand.Int(rand.Reader, bn256.Order); err != nil {
-	// 	fmt.Printf("parameter generation %v", err)
-	// }
+	var s1 *big.Int // big.NewInt(5)
+	if s1, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var s2 *big.Int // big.NewInt(7)
+	if s2, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
 
 	// var betaV *big.Int
-	// if betaV, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if betaV, err = rand.Int(rand.Reader, order); err != nil {
 	// 	fmt.Printf("parameter generation %v", err)
 	// }
 
 	// var betaW *big.Int
-	// if betaW, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if betaW, err = rand.Int(rand.Reader, order); err != nil {
 	// 	fmt.Printf("parameter generation %v", err)
 	// }
 
 	// var betaY *big.Int
-	// if betaY, err = rand.Int(rand.Reader, bn256.Order); err != nil {
+	// if betaY, err = rand.Int(rand.Reader, order); err != nil {
 	// 	fmt.Printf("parameter generation %v", err)
 	// }
 
@@ -317,7 +331,9 @@ func E1SQAP() bool {
 		), // v0(s)
 	)
 
-	leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
+	// leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
+	leftG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), leftG[0]), order)
+
 	v[0] = new(bn256.G1).ScalarMult(g1, leftG[0]) // E(v0(s))
 
 	leftG = append(
@@ -328,8 +344,10 @@ func E1SQAP() bool {
 		), // v1(s)
 	)
 
-	leftG[1] = new(big.Int).Mul(big.NewInt(2), leftG[1]) // a1 = 1
-	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1])        // E(a1 * v1(s))
+	// leftG[1] = new(big.Int).Mul(big.NewInt(2), leftG[1])                          // a1 = 2
+	leftG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(2), leftG[1]), order) // a1 = 2
+
+	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1]) // E(a1 * v1(s))
 
 	leftG = append(
 		leftG,
@@ -339,8 +357,10 @@ func E1SQAP() bool {
 		), // v2(s)
 	)
 
-	leftG[2] = new(big.Int).Mul(big.NewInt(6), leftG[2]) // a2 = 6
-	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2])        // E(a2 * v2(s))
+	// leftG[2] = new(big.Int).Mul(big.NewInt(6), leftG[2])                          // a2 = 6
+	leftG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(6), leftG[2]), order) // a2 = 6
+
+	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2]) // E(a2 * v2(s))
 
 	var w [3]*bn256.G2
 	var rightG []*big.Int
@@ -354,7 +374,9 @@ func E1SQAP() bool {
 		), // w0(s)
 	)
 
-	rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
+	// rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
+	rightG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), rightG[0]), order)
+
 	w[0] = new(bn256.G2).ScalarMult(g2, rightG[0]) // E(w0(s))
 
 	rightG = append(
@@ -366,8 +388,10 @@ func E1SQAP() bool {
 		), // w1(s)
 	)
 
-	rightG[1] = new(big.Int).Mul(big.NewInt(2), rightG[1]) // a1 = 2
-	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1])         // E(a1 * w1(s))
+	// rightG[1] = new(big.Int).Mul(big.NewInt(2), rightG[1])                          // a1 = 2
+	rightG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(2), rightG[1]), order) // a1 = 2
+
+	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1]) // E(a1 * w1(s))
 
 	rightG = append(
 		rightG,
@@ -377,8 +401,10 @@ func E1SQAP() bool {
 		), // w2(s)
 	)
 
-	rightG[2] = new(big.Int).Mul(big.NewInt(6), rightG[2]) // a2 = 6
-	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2])         // E(a2 * w2(s))
+	// rightG[2] = new(big.Int).Mul(big.NewInt(6), rightG[2])                          // a2 = 6
+	rightG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(6), rightG[2]), order) // a2 = 6
+
+	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2]) // E(a2 * w2(s))
 
 	var y [3]*bn256.G2
 	var outputG []*big.Int
@@ -388,7 +414,9 @@ func E1SQAP() bool {
 		big.NewInt(0), // y0(s)
 	)
 
-	outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
+	// outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
+	outputG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), outputG[0]), order)
+
 	y[0] = new(bn256.G2).ScalarMult(g2, outputG[0]) // E(y0(s))
 
 	outputG = append(
@@ -400,8 +428,10 @@ func E1SQAP() bool {
 		), // y1(s)
 	)
 
-	outputG[1] = new(big.Int).Mul(big.NewInt(2), outputG[1]) // a1 = 2
-	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1])          // E(a1 * y1(s))
+	// outputG[1] = new(big.Int).Mul(big.NewInt(2), outputG[1])                          // a1 = 2
+	outputG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(2), outputG[1]), order) // a1 = 2
+
+	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1]) // E(a1 * y1(s))
 
 	outputG = append(
 		outputG,
@@ -413,8 +443,10 @@ func E1SQAP() bool {
 		), // y2(s)
 	)
 
-	outputG[2] = new(big.Int).Mul(big.NewInt(6), outputG[2]) // a2 = 6
-	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2])          // E(a2 * y2(s))
+	// outputG[2] = new(big.Int).Mul(big.NewInt(6), outputG[2])                          // a2 = 6
+	outputG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(6), outputG[2]), order) // a2 = 6
+
+	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2]) // E(a2 * y2(s))
 
 	var term1 = new(big.Int).Add(
 		leftG[0],
@@ -440,26 +472,53 @@ func E1SQAP() bool {
 		),
 	)
 
-	var t = new(big.Int).Mul(
-		new(big.Int).Sub(s, r),
+	// var t = new(big.Int).Mul(
+	// 	new(big.Int).Sub(s, r),
 
+	// 	new(big.Int).Mul(
+	// 		new(big.Int).Mul(
+	// 			new(big.Int).Sub(s, r1),
+	// 			new(big.Int).Sub(s, r2),
+	// 		),
+	// 		new(big.Int).Mul(
+	// 			new(big.Int).Sub(s, s1),
+	// 			new(big.Int).Sub(s, s2),
+	// 		),
+	// 	),
+	// )
+
+	var t = new(big.Int).Mod(
 		new(big.Int).Mul(
+			new(big.Int).Sub(s, r),
 			new(big.Int).Mul(
-				new(big.Int).Sub(s, r1),
-				new(big.Int).Sub(s, r2),
-			),
-			new(big.Int).Mul(
-				new(big.Int).Sub(s, s1),
-				new(big.Int).Sub(s, s2),
+				new(big.Int).Mul(
+					new(big.Int).Sub(s, r1),
+					new(big.Int).Sub(s, r2),
+				),
+				new(big.Int).Mul(
+					new(big.Int).Sub(s, s1),
+					new(big.Int).Sub(s, s2),
+				),
 			),
 		),
+		order,
 	)
 
-	var h = new(big.Int).Mul(
-		new(big.Int).Sub(
-			new(big.Int).Mul(term1, term2), term3,
+	// var h = new(big.Int).Mul(
+	// 	new(big.Int).Sub(
+	// 		new(big.Int).Mul(term1, term2), term3,
+	// 	),
+	// 	new(big.Int).ModInverse(t, order),
+	// )
+
+	var h = new(big.Int).Mod(
+		new(big.Int).Mul(
+			new(big.Int).Sub(
+				new(big.Int).Mul(term1, term2), term3,
+			),
+			new(big.Int).ModInverse(t, order),
 		),
-		new(big.Int).ModInverse(t, order),
+		order,
 	)
 
 	// Quadratic root detection to validate the SNARK was constructed with
