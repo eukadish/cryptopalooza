@@ -261,6 +261,7 @@ func E1SQAP() bool {
 
 	var order = bn256.Order
 	// var order = bn256.Order.Set(big.NewInt(11))
+	// var order = bn256.Order.Set(big.NewInt(23))
 	// var order = bn256.Order.Set(big.NewInt(997))
 
 	var g1 *bn256.G1

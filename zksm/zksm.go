@@ -73,15 +73,16 @@ func E1SM() bool {
 		}
 	}
 
-	// NOTE: For application purposes, this data is ideal for submitting to an
-	// immutable log such as a Blockchain. It is critical the commitment happens
-	// before the prover runs, so that this sequence is captured, for regulatory
-	// purposes etc.
+	// For building applications this data is ideal for submitting to an
+	// immutable log such as a blockchain. This is because the validity of the
+	// proofs rely on a sequence of data transfer where the commitment needs
+	// to be supplied before the proof is generated.
 
-	// The setup dat can also be used as a type of configuration fo working with
-	// the proof data and in fact stamping configuration in timesequences was
-	// the original description for Paxos as described here:
-	//  https://www.youtube.com/watch?v=JEpsBg0AO6o
+	// Also, the setup step can be considered a configuration for the
+	//  distributed system, and with a blockchain can be locked into a
+	//  particular time slot. This would analogous to how the Paxos
+	//  specification describes system configuration:
+	//  https://youtu.be/JEpsBg0AO6o?t=3521
 
 	// Prover
 
@@ -185,9 +186,6 @@ func E1SM() bool {
 			new(bn256.GT).ScalarMult(bn256.Pair(g1, g2), zTau),
 		),
 	)
-
-	// fmt.Println(bytes.Equal(D.Marshal(), left.Marshal()))
-	// fmt.Println(bytes.Equal(a.Marshal(), right.Marshal()))
 
 	return bytes.Equal(D.Marshal(), left.Marshal()) && bytes.Equal(a.Marshal(), right.Marshal())
 }

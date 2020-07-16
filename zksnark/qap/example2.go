@@ -158,19 +158,16 @@ func E2QAP() bool {
 	if r1, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
-	// r1 = big.NewInt(3)
 
 	var r2 *big.Int // big.NewInt(7)
 	if r2, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
-	// r1 = big.NewInt(7)
 
-	var s *big.Int // big.NewInt(27)
+	var s *big.Int // big.NewInt(5)
 	if s, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("parameter generation %v", err)
 	}
-	// s = big.NewInt(5)
 
 	// var betaV *big.Int
 	// if betaV, err = rand.Int(rand.Reader, order); err != nil {
@@ -341,7 +338,6 @@ func E2QAP() bool {
 	outputG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), outputG[0]), order)
 
 	y[0] = new(bn256.G2).ScalarMult(g2, outputG[0]) // E(y0(s))
-	// y[0] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[0])) // E(-y0(s))
 
 	outputG = append(
 		outputG,
@@ -352,7 +348,6 @@ func E2QAP() bool {
 	outputG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(3), outputG[1]), order) // a1 = 3
 
 	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1]) // E(a1 * v1(s))
-	// y[1] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[1])) // E(-a1 * v1(s))
 
 	outputG = append(
 		outputG,
@@ -363,7 +358,6 @@ func E2QAP() bool {
 	outputG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(2), outputG[2]), order) // a2 = 2
 
 	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2]) // E(a2 * y3(s))
-	// y[2] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[2])) // E(-a2 * y2(s))
 
 	outputG = append(
 		outputG,
@@ -377,7 +371,6 @@ func E2QAP() bool {
 	outputG[3] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(24), outputG[3]), order) // a3 = 24
 
 	y[3] = new(bn256.G2).ScalarMult(g2, outputG[3]) // E(a3 * y3(s))
-	// y[3] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[3])) // E(-a3 * y3(s))
 
 	outputG = append(
 		outputG,
@@ -388,7 +381,6 @@ func E2QAP() bool {
 	outputG[4] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), outputG[4]), order) // a4 = 1
 
 	y[4] = new(bn256.G2).ScalarMult(g2, outputG[4]) // E(a4 * y4(s))
-	// y[4] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[4])) // E(-a4 * y4(s))
 
 	outputG = append(
 		outputG,
@@ -402,15 +394,6 @@ func E2QAP() bool {
 	outputG[5] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(13), outputG[5]), order) // a5 = 13
 
 	y[5] = new(bn256.G2).ScalarMult(g2, outputG[5]) // E(a5 * y5(s))
-	// y[5] = new(bn256.G2).ScalarMult(g2, new(big.Int).Sub(order, outputG[5])) // E(-a5 * y5(s))
-
-	var t = new(big.Int).Mod(
-		new(big.Int).Mul(
-			new(big.Int).Sub(s, r1),
-			new(big.Int).Sub(s, r2),
-		),
-		order,
-	)
 
 	var term1 = new(big.Int).Add(
 		new(big.Int).Add(leftG[0], leftG[1]),
@@ -434,6 +417,14 @@ func E2QAP() bool {
 			new(big.Int).Add(outputG[2], outputG[3]),
 			new(big.Int).Add(outputG[4], outputG[5]),
 		),
+	)
+
+	var t = new(big.Int).Mod(
+		new(big.Int).Mul(
+			new(big.Int).Sub(s, r1),
+			new(big.Int).Sub(s, r2),
+		),
+		order,
 	)
 
 	var h = new(big.Int).Mod(
@@ -461,64 +452,6 @@ func E2QAP() bool {
 			new(bn256.G2).Add(w[4], w[5]),
 		),
 	)
-
-	// fmt.Println(
-	// 	new(big.Int).Mod(
-	// 		new(big.Int).Sub(
-	// 			new(big.Int).Mul(
-	// 				term1, term2,
-	// 			),
-	// 			term3,
-	// 		),
-	// 		order,
-	// 	),
-	// )
-
-	// fmt.Println(
-	// 	new(big.Int).Mod(
-	// 		new(big.Int).Add(
-	// 			new(big.Int).Add(leftG[0], leftG[1]),
-	// 			new(big.Int).Add(
-	// 				new(big.Int).Add(leftG[2], leftG[3]),
-	// 				new(big.Int).Add(leftG[4], leftG[5]),
-	// 			),
-	// 		),
-	// 		order,
-	// 	),
-	// )
-
-	// fmt.Println(
-	// 	new(big.Int).Mod(
-	// 		new(big.Int).Add(
-	// 			new(big.Int).Add(rightG[0], rightG[1]),
-	// 			new(big.Int).Add(
-	// 				new(big.Int).Add(rightG[2], rightG[3]),
-	// 				new(big.Int).Add(rightG[4], rightG[5]),
-	// 			),
-	// 		),
-	// 		order,
-	// 	),
-	// )
-
-	// fmt.Println(
-	// 	new(big.Int).Mod(
-	// 		new(big.Int).Add(
-	// 			new(big.Int).Add(outputG[0], outputG[1]),
-	// 			new(big.Int).Add(
-	// 				new(big.Int).Add(outputG[2], outputG[3]),
-	// 				new(big.Int).Add(outputG[4], outputG[5]),
-	// 			),
-	// 		),
-	// 		order,
-	// 	),
-	// )
-
-	// fmt.Println(
-	// 	new(big.Int).Mod(
-	// 		new(big.Int).Mul(t, h),
-	// 		order,
-	// 	),
-	// )
 
 	var eY = bn256.Pair(
 		g1,

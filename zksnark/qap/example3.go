@@ -1,5 +1,14 @@
 package qap
 
+import (
+	"bytes"
+	"crypto/rand"
+	"fmt"
+	"math/big"
+
+	"github.com/cloudflare/bn256"
+)
+
 // f(x1) = x1 * x1 * x1 + x1 + 5
 //       =    x1 * x2   + x1 + 5
 //       =      x3      + x1 + 5
@@ -187,7 +196,7 @@ package qap
 //              (r3 - r1) * (r3 - r2)
 
 // The assignment variables including those that are intermediate for the
-// circuite are: a1 = 3, a2 = 9, a3 = 27, and a4 = 35. To check the polynomials
+// circuit are: a1 = 3, a2 = 9, a3 = 27, and a4 = 35. To check the polynomials
 // as defined are correct the relation can be evaluated at r1, r2 and r3 to see
 // if has the expected result of 0.
 
@@ -210,7 +219,329 @@ package qap
 // and evaluates it.
 func E3QAP() bool {
 
-	return true
+	var err error
+
+	var order = bn256.Order
+	// var order = bn256.Order.Set(big.NewInt(11))
+	// var order = bn256.Order.Set(big.NewInt(23))
+	// var order = bn256.Order.Set(big.NewInt(997))
+
+	var g1 *bn256.G1
+	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var g2 *bn256.G2
+	if _, g2, err = bn256.RandomG2(rand.Reader); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var r1 *big.Int // big.NewInt(3)
+	if r1, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var r2 *big.Int // big.NewInt(7)
+	if r2, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var r3 *big.Int // big.NewInt(10)
+	if r3, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var s *big.Int // big.NewInt(5)
+	if s, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	// var betaV *big.Int
+	// if betaV, err = rand.Int(rand.Reader, order); err != nil {
+	// 	fmt.Printf("parameter generation %v", err)
+	// }
+
+	// var betaW *big.Int
+	// if betaW, err = rand.Int(rand.Reader, order); err != nil {
+	// 	fmt.Printf("parameter generation %v", err)
+	// }
+
+	// var betaY *big.Int
+	// if betaY, err = rand.Int(rand.Reader, order); err != nil {
+	// 	fmt.Printf("parameter generation %v", err)
+	// }
+
+	var v [5]*bn256.G1
+	var leftG []*big.Int
+
+	leftG = append(
+		leftG,
+		Interpolate(
+			s, []int64{1},
+			BasisPolynomial(order, 2, []*big.Int{r1, r2, r3}...),
+		), // v0(s)
+	)
+
+	// leftG[0] = new(big.Int).Mul(big.NewInt(1), leftG[0])
+	leftG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), leftG[0]), order)
+
+	v[0] = new(bn256.G1).ScalarMult(g1, leftG[0]) // E(v0(s))
+
+	leftG = append(
+		leftG,
+		Interpolate(
+			s, []int64{1, 1},
+			BasisPolynomial(order, 0, []*big.Int{r1, r2, r3}...),
+			BasisPolynomial(order, 1, []*big.Int{r1, r2, r3}...),
+		), // v1(s)
+	)
+
+	// leftG[1] = new(big.Int).Mul(big.NewInt(3), leftG[1])                          // a1 = 3
+	leftG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(3), leftG[1]), order) // a1 = 3
+
+	v[1] = new(bn256.G1).ScalarMult(g1, leftG[1]) // E(a1 * v1(s))
+
+	leftG = append(
+		leftG,
+		big.NewInt(0), // v2(s)
+	)
+
+	// leftG[2] = new(big.Int).Mul(big.NewInt(9), leftG[2])                          // a2 = 9
+	leftG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(9), leftG[2]), order) // a2 = 9
+
+	v[2] = new(bn256.G1).ScalarMult(g1, leftG[2]) // E(a2 * v2(s))
+
+	leftG = append(
+		leftG,
+		big.NewInt(0), // v3(s)
+	)
+
+	// leftG[3] = new(big.Int).Mul(big.NewInt(27), leftG[3])                          // a3 = 27
+	leftG[3] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(27), leftG[3]), order) // a3 = 27
+
+	v[3] = new(bn256.G1).ScalarMult(g1, leftG[3]) // E(a3 * v3(s))
+
+	leftG = append(
+		leftG,
+		big.NewInt(0), // v4(s)
+	)
+
+	// leftG[4] = new(big.Int).Mul(big.NewInt(35), leftG[4])                          // a4 = 35
+	leftG[4] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(35), leftG[4]), order) // a4 = 35
+
+	v[4] = new(bn256.G1).ScalarMult(g1, leftG[4]) // E(a4 * v4(s))
+
+	var w [5]*bn256.G2
+	var rightG []*big.Int
+
+	rightG = append(
+		rightG,
+		Interpolate(
+			s, []int64{5},
+			BasisPolynomial(order, 2, []*big.Int{r1, r2, r3}...),
+		), // w0(s)
+	)
+
+	// rightG[0] = new(big.Int).Mul(big.NewInt(1), rightG[0])
+	rightG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), rightG[0]), order)
+
+	w[0] = new(bn256.G2).ScalarMult(g2, rightG[0]) // E(w0(s))
+
+	rightG = append(
+		rightG,
+		Interpolate(
+			s, []int64{1, 1},
+			BasisPolynomial(order, 0, []*big.Int{r1, r2, r3}...),
+			BasisPolynomial(order, 2, []*big.Int{r1, r2, r3}...),
+		), // w1(s)
+	)
+
+	// rightG[1] = new(big.Int).Mul(big.NewInt(3), rightG[1])                          // a1 = 3
+	rightG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(3), rightG[1]), order) // a1 = 3
+
+	w[1] = new(bn256.G2).ScalarMult(g2, rightG[1]) // E(a1 * w1(s))
+
+	rightG = append(
+		rightG,
+		Interpolate(
+			s, []int64{1},
+			BasisPolynomial(order, 1, []*big.Int{r1, r2, r3}...),
+		), // w2(s)
+	)
+
+	// rightG[2] = new(big.Int).Mul(big.NewInt(9), rightG[2])                          // a2 = 9
+	rightG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(9), rightG[2]), order) // a2 = 9
+
+	w[2] = new(bn256.G2).ScalarMult(g2, rightG[2]) // E(a2 * w2(s))
+
+	rightG = append(
+		rightG,
+		Interpolate(
+			s, []int64{1},
+			BasisPolynomial(order, 2, []*big.Int{r1, r2, r3}...),
+		), // w3(s)
+	)
+
+	// rightG[3] = new(big.Int).Mul(big.NewInt(27), rightG[3])                          // a3 = 27
+	rightG[3] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(27), rightG[3]), order) // a3 = 27
+
+	w[3] = new(bn256.G2).ScalarMult(g2, rightG[3]) // E(a3 * v3(s))
+
+	rightG = append(
+		rightG,
+		big.NewInt(0), // w4(s)
+	)
+
+	// rightG[4] = new(big.Int).Mul(big.NewInt(35), rightG[4])                          // a4 = 35
+	rightG[4] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(35), rightG[4]), order) // a4 = 35
+
+	w[4] = new(bn256.G2).ScalarMult(g2, rightG[4]) // E(a4 * w4(s))
+
+	var y [5]*bn256.G2
+	var outputG []*big.Int
+
+	outputG = append(
+		outputG,
+		big.NewInt(0), // y0(s)
+	)
+
+	// outputG[0] = new(big.Int).Mul(big.NewInt(1), outputG[0])
+	outputG[0] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(1), outputG[0]), order)
+
+	y[0] = new(bn256.G2).ScalarMult(g2, outputG[0]) // E(y0(s))
+
+	outputG = append(
+		outputG,
+		big.NewInt(0), // y1(s)
+	)
+
+	// outputG[0] = new(big.Int).Mul(big.NewInt(3), outputG[1])                          // a1 = 3
+	outputG[1] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(3), outputG[1]), order) // a1 = 3
+
+	y[1] = new(bn256.G2).ScalarMult(g2, outputG[1]) // E(a1 * y1(s))
+
+	outputG = append(
+		outputG,
+		Interpolate(
+			s, []int64{1},
+			BasisPolynomial(order, 0, []*big.Int{r1, r2, r3}...),
+		), // y2(s)
+	)
+
+	// outputG[2] = new(big.Int).Mul(big.NewInt(9), outputG[2])                          // a2 = 9
+	outputG[2] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(9), outputG[2]), order) // a2 = 9
+
+	y[2] = new(bn256.G2).ScalarMult(g2, outputG[2]) // E(a2 * y3(s))
+
+	outputG = append(
+		outputG,
+		Interpolate(
+			s, []int64{1},
+			BasisPolynomial(order, 1, []*big.Int{r1, r2, r3}...),
+		), // y3(s)
+	)
+
+	// outputG[3] = new(big.Int).Mul(big.NewInt(27), outputG[3])                          // a3 = 27
+	outputG[3] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(27), outputG[3]), order) // a3 = 27
+
+	y[3] = new(bn256.G2).ScalarMult(g2, outputG[3]) // E(a3 * y3(s))
+
+	outputG = append(
+		outputG,
+		Interpolate(
+			s, []int64{1},
+			BasisPolynomial(order, 2, []*big.Int{r1, r2, r3}...),
+		), // y4(s)
+	)
+
+	// outputG[4] = new(big.Int).Mul(big.NewInt(35), outputG[4])                          // a4 = 35
+	outputG[4] = new(big.Int).Mod(new(big.Int).Mul(big.NewInt(35), outputG[4]), order) // a4 = 35
+
+	y[4] = new(bn256.G2).ScalarMult(g2, outputG[4]) // E(a4 * y4(s))
+
+	var term1 = new(big.Int).Add(
+		leftG[0],
+		new(big.Int).Add(
+			new(big.Int).Add(leftG[1], leftG[2]),
+			new(big.Int).Add(leftG[3], leftG[4]),
+		),
+	)
+
+	var term2 = new(big.Int).Add(
+		rightG[0],
+		new(big.Int).Add(
+			new(big.Int).Add(rightG[1], rightG[2]),
+			new(big.Int).Add(rightG[3], rightG[4]),
+		),
+	)
+
+	var term3 = new(big.Int).Add(
+		outputG[0],
+		new(big.Int).Add(
+			new(big.Int).Add(outputG[1], outputG[2]),
+			new(big.Int).Add(outputG[3], outputG[4]),
+		),
+	)
+
+	var t = new(big.Int).Mod(
+		new(big.Int).Mul(
+			new(big.Int).Sub(s, r1),
+			new(big.Int).Mul(
+				new(big.Int).Sub(s, r2),
+				new(big.Int).Sub(s, r3),
+			),
+		),
+		order,
+	)
+
+	var h = new(big.Int).Mod(
+		new(big.Int).Mul(
+			new(big.Int).Sub(
+				new(big.Int).Mul(term1, term2), term3,
+			),
+			new(big.Int).ModInverse(t, order),
+		),
+		order,
+	)
+
+	var eV = new(bn256.G1).Add(
+		v[0],
+		new(bn256.G1).Add(
+			new(bn256.G1).Add(v[1], v[2]),
+			new(bn256.G1).Add(v[3], v[4]),
+		),
+	)
+
+	var eW = new(bn256.G2).Add(
+		w[0],
+		new(bn256.G2).Add(
+			new(bn256.G2).Add(w[1], w[2]),
+			new(bn256.G2).Add(w[3], w[4]),
+		),
+	)
+
+	var eY = bn256.Pair(
+		g1,
+		new(bn256.G2).Add(
+			y[0],
+			new(bn256.G2).Add(
+				new(bn256.G2).Add(y[1], y[2]),
+				new(bn256.G2).Add(y[3], y[4]),
+			),
+		),
+	)
+
+	var eT = new(bn256.G1).ScalarMult(g1, t)
+	var eH = new(bn256.G2).ScalarMult(g2, h)
+
+	var left = new(bn256.GT).Add(
+		bn256.Pair(eV, eW),
+		new(bn256.GT).Neg(eY),
+	)
+
+	var right = bn256.Pair(eT, eH)
+
+	return bytes.Equal(left.Marshal(), right.Marshal())
 }
 
 // E3SQAP defines a strong QAP for the arithmetic expression, uses it to create
