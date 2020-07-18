@@ -7,9 +7,6 @@ import (
 	"github.com/eugenekadish/cryptopalooza/zksnark/qap"
 )
 
-// https://eprint.iacr.org/2012/215.pdf
-// https://eprint.iacr.org/2013/507.pdf
-
 func main() {
 
 	fmt.Printf(" Example 1 QAP         %t \n", qap.E1QAP())

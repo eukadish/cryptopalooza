@@ -39,6 +39,8 @@ func Interpolate(
 	x *big.Int, yCoords []int64, basis ...func(*big.Int) *big.Int,
 ) *big.Int {
 
+	// TODO: Use Fast Fourier transform (FFT) for polynomial interpolation
+
 	var accumulator = big.NewInt(0)
 
 	var index int

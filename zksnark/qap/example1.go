@@ -539,6 +539,8 @@ func E1SQAP() bool {
 
 	var right = bn256.Pair(eT, eH)
 
+	// TODO: Include additional randomness to make the SNARK zero-knowledge
+
 	return bytes.Equal(left.Marshal(), right.Marshal())
 }
 
@@ -566,10 +568,13 @@ func E1R1CS() bool {
 
 	// [0, 0, 1]
 
-	// (A . s) * (B . s) = (3 * 1) * (1 * a1)
+	// (A0 . s) * (B0 . s) = (3 * 1 + 0 * 2 + 0 * 6) * (0 * 1 + 1 * 2 + 0 * 6)
 	//                   = (3 * 1) * (1 * 2)
 	//                   = 6
-	//                   = (C . s)
+	//                   = (0 * 1 + 0 * 2 + 1 * 6)
+	//                   = (C0 . s)
+
+	// TODO: Use QAP to generate linear PCPs (Probablistically Checkable Proofs)
 
 	return true
 }

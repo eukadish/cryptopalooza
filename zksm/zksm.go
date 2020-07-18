@@ -79,10 +79,10 @@ func E1SM() bool {
 	// to be supplied before the proof is generated.
 
 	// Also, the setup step can be considered a configuration for the
-	//  distributed system, and with a blockchain can be locked into a
-	//  particular time slot. This would analogous to how the Paxos
-	//  specification describes system configuration:
-	//  https://youtu.be/JEpsBg0AO6o?t=3521
+	// distributed system, and with a blockchain can be locked into a
+	// particular time slot. This would analogous to how the Paxos
+	// specification describes system configuration:
+	// https://youtu.be/JEpsBg0AO6o?t=3521
 
 	// Prover
 

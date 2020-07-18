@@ -541,6 +541,8 @@ func E3QAP() bool {
 
 	var right = bn256.Pair(eT, eH)
 
+	// TODO: Include additional randomness to make the SNARK zero-knowledge
+
 	return bytes.Equal(left.Marshal(), right.Marshal())
 }
 
@@ -598,6 +600,8 @@ func E3R1CS() bool {
 
 	// The Lagrange interpolation polynomials for the QAP can then be derived
 	// with the constraints, which is done in: E3QAP
+
+	// TODO: Use QAP to generate linear PCPs (Probablistically Checkable Proofs)
 
 	return true
 }

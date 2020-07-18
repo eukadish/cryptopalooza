@@ -16,9 +16,7 @@ import (
 
 // 4 * a1 * a2 - 7 * a2 + 3 * a4 = a5
 
-// This relation is satisfied for a1 = 3, a2 = 2, a4 = 1, and a5 = 13. The index
-// 3 is skipped for convenience, because it will be used for an intermediate
-// result for the QAP composition.
+// a1 =  3 | a2 =  2 | a3 = 24 | a4 =  1 | a5 = 13
 
 // f1(x1, x2) = 4 * x1 * x2
 //            = (4 * x1) * x2
@@ -46,7 +44,7 @@ import (
 #         |              |             |                                                                                                                     #
 #         |              |             |                                                                                                                     #
 #         |              |             |                                                                                                                     #
-#     f(x1, x2)          a3            24                                                                                                                    #
+#    f1(x1, x2)          a3            24                                                                                                                    #
 #                                                                                                                                                            #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # */
 
@@ -120,7 +118,7 @@ import (
 // The assignment variables including those that are intermediate for the
 // circuit are: a1 = 3, a2 = 2, a3 = 24, a4 = 1, and a5 = 13. To check the
 // polynomials as defined are correct the relation can be evaluated at r1 and
-// r2 to see if has the expected result of 0.
+// r2 to see if it has the expected result of 0.
 
 // (v0 + v1 * a1 + v2 * a2 + v3 * a3 + v4 * a4 + v5 * a5) * (w0 + w1 * a1 + w2 * a2 + w3 * a3 + w4 * a4 + w5 * a5)
 //                         = (y0 + y1 * a1 + y2 * a2 + y3 * a3 + y4 * a4)
@@ -474,6 +472,8 @@ func E2QAP() bool {
 
 	var right = bn256.Pair(eT, eH)
 
+	// TODO: Include additional randomness to make the SNARK zero-knowledge
+
 	return bytes.Equal(left.Marshal(), right.Marshal())
 }
 
@@ -523,13 +523,16 @@ func E2R1CS() bool {
 	// [0,  0,  0,  1,  0,  0]
 	// [0,  0,  0,  0,  0,  1]
 
-	// (A1 . s) * (B1 . s) = (4 * a1) * (1 * a2)
+	// (A0 . s) * (B1 . s) = (0 * 1 + 4 * 3 + 0 * 2 + 0 * 24 + 0 * 1 + 0 * 13) * (0 * 1 + 0 * 3 + 1 * 2 + 0 * 24 + 0 * 1 + 0 * 13)
 	//                     = (4 * 3) * (1 * 2)
 	//                     = 24
+	//                     = (0 * 1 + 0 * 3 + 0 * 2 + 1 * 24 + 0 * 1 + 0 * 13)
 	//                     = (C1 . s)
 
 	// The Lagrange interpolation polynomials for the QAP can then be derived
 	// with the constraints, which is done in: E2QAP
+
+	// TODO: Use QAP to generate linear PCPs (Probablistically Checkable Proofs)
 
 	return true
 }
