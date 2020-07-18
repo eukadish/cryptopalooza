@@ -54,7 +54,7 @@ import (
 
 // E1QAP defines a QAP for the arithmetic expression, uses it to create a SNARK,
 // and evaluates it.
-func E1QAP() bool {
+func E1QAP(order *big.Int) bool {
 
 	var err error
 
@@ -255,14 +255,9 @@ func E1QAP() bool {
 
 // E1SQAP defines a string QAP for the arithmetic expression, uses it to create
 // a SNARK, and evaluates it.
-func E1SQAP() bool {
+func E1SQAP(order *big.Int) bool {
 
 	var err error
-
-	var order = bn256.Order
-	// var order = bn256.Order.Set(big.NewInt(11))
-	// var order = bn256.Order.Set(big.NewInt(23))
-	// var order = bn256.Order.Set(big.NewInt(997))
 
 	var g1 *bn256.G1
 	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
@@ -546,7 +541,7 @@ func E1SQAP() bool {
 
 // E1R1CS defines a R1CS that simplifies deriving the constraints for creating
 // the QAP.
-func E1R1CS() bool {
+func E1R1CS(order *big.Int) bool {
 
 	// 3 * x1 = x2
 

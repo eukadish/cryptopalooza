@@ -11,11 +11,9 @@ import (
 
 // E1SM provides a pedersen commitment, generated a zero-knowledge proof of set
 // membership, and verifies it.
-func E1SM() bool {
+func E1SM(order *big.Int) bool {
 
 	var err error
-
-	var order = bn256.Order
 
 	// Commitment
 
@@ -143,37 +141,6 @@ func E1SM() bool {
 			new(bn256.G1).ScalarMult(g1, zDelta),
 		),
 	)
-
-	// fmt.Println(
-	// 	new(big.Int).Mod(
-	// 		new(big.Int).Sub(t,
-	// 			new(big.Int).Mul(
-	// 				new(big.Int).Mul(s, tau),
-	// 				new(big.Int).ModInverse(new(big.Int).Add(x, big.NewInt(delta)), order),
-	// 			),
-	// 		),
-	// 		order,
-	// 	),
-	// )
-
-	// fmt.Println(
-	// 	new(big.Int).Mod(
-	// 		new(big.Int).Add(
-	// 			new(big.Int).Sub(
-	// 				new(big.Int).Mul(c,
-	// 					new(big.Int).Mul(tau,
-	// 						new(big.Int).Mul(x, new(big.Int).ModInverse(new(big.Int).Add(x, big.NewInt(delta)), order)),
-	// 					),
-	// 				),
-	// 				new(big.Int).Mul(tau,
-	// 					new(big.Int).Mul(zDelta, new(big.Int).ModInverse(new(big.Int).Add(x, big.NewInt(delta)), order)),
-	// 				),
-	// 			),
-	// 			zTau,
-	// 		),
-	// 		order,
-	// 	),
-	// )
 
 	c = new(big.Int).Mod(c, order)
 	zDelta = new(big.Int).Mod(zDelta, order)

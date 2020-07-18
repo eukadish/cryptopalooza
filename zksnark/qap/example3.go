@@ -217,14 +217,9 @@ import (
 
 // E3QAP defines a QAP for the arithmetic expression, uses it to create a SNARK,
 // and evaluates it.
-func E3QAP() bool {
+func E3QAP(order *big.Int) bool {
 
 	var err error
-
-	var order = bn256.Order
-	// var order = bn256.Order.Set(big.NewInt(11))
-	// var order = bn256.Order.Set(big.NewInt(23))
-	// var order = bn256.Order.Set(big.NewInt(997))
 
 	var g1 *bn256.G1
 	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
@@ -548,14 +543,14 @@ func E3QAP() bool {
 
 // E3SQAP defines a strong QAP for the arithmetic expression, uses it to create
 // a SNARK, and evaluates it.
-func E3SQAP() bool {
+func E3SQAP(order *big.Int) bool {
 
 	return true
 }
 
 // E3R1CS generates the Quadratic Arithmetic Program to validate arithmetic
 //  circuits in Zero Knowledge
-func E3R1CS() bool {
+func E3R1CS(order *big.Int) bool {
 
 	// Using the intermediate results.
 
