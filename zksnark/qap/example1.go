@@ -468,21 +468,6 @@ func E1SQAP(order *big.Int) bool {
 		),
 	)
 
-	// var t = new(big.Int).Mul(
-	// 	new(big.Int).Sub(s, r),
-
-	// 	new(big.Int).Mul(
-	// 		new(big.Int).Mul(
-	// 			new(big.Int).Sub(s, r1),
-	// 			new(big.Int).Sub(s, r2),
-	// 		),
-	// 		new(big.Int).Mul(
-	// 			new(big.Int).Sub(s, s1),
-	// 			new(big.Int).Sub(s, s2),
-	// 		),
-	// 	),
-	// )
-
 	var t = new(big.Int).Mod(
 		new(big.Int).Mul(
 			new(big.Int).Sub(s, r),
@@ -499,13 +484,6 @@ func E1SQAP(order *big.Int) bool {
 		),
 		order,
 	)
-
-	// var h = new(big.Int).Mul(
-	// 	new(big.Int).Sub(
-	// 		new(big.Int).Mul(term1, term2), term3,
-	// 	),
-	// 	new(big.Int).ModInverse(t, order),
-	// )
 
 	var h = new(big.Int).Mod(
 		new(big.Int).Mul(

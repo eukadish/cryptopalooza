@@ -118,6 +118,9 @@ func E1SM(order *big.Int) bool {
 
 	// Verifier
 
+	// NOTE: The proof proof can be made non-interactive by defining c as the
+	// hash of a and D.
+
 	var c *big.Int
 	if c, err = rand.Int(rand.Reader, order); err != nil {
 		fmt.Printf("error generating field element %v \n", err)

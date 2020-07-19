@@ -499,6 +499,9 @@ func E3QAP(order *big.Int) bool {
 		order,
 	)
 
+	// Quadratic root detection to validate the SNARK was constructed with
+	// values that satisfy the arithmetic circuit.
+
 	var eV = new(bn256.G1).Add(
 		v[0],
 		new(bn256.G1).Add(

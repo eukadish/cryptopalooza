@@ -20,7 +20,7 @@ useful to get a refresher on:
   * https://en.wikipedia.org/wiki/Lagrange_polynomial
   * https://en.wikipedia.org/wiki/Polynomial_remainder_theorem
 
-Also, a simplifying technique of R1CS (Rank-1 Constraint Systems) to generate QAPs is shown in the comments and compared
+A simplifying technique of R1CS (Rank-1 Constraint Systems) to generate QAPs is shown in the comments and compared
 with the derived QAP. The code verifies the QAP is correct by checking two sides of an equation with quadratic root
 detection.
 
