@@ -32,5 +32,5 @@ func main() {
 
 	fmt.Printf(" Zero Knowledge            %t \n", zksm.E1SM(order))
 	fmt.Printf(" RSA Accumulator           %t \n", sm.E1ACCUM(order))
-	fmt.Printf(" Bilinear-map Accumulator  %t \n", sm.E1ACCUM(order))
+	fmt.Printf(" Bilinear-map Accumulator  %t \n", sm.E2ACCUM(order))
 }

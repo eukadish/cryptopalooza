@@ -2,9 +2,11 @@ package sm
 
 import (
 	"bytes"
+	"crypto/rand"
+	"fmt"
 	"math/big"
-	"math/rand"
-	"time"
+
+	"github.com/cloudflare/bn256"
 )
 
 // HPrime is the prime represntative for all members in the set.
@@ -16,12 +18,19 @@ var HPrime = map[string]int{
 // check of membership.
 func E1ACCUM(order *big.Int) bool {
 
+	var err error
+
 	var p, q = big.NewInt(11), big.NewInt(17) // The two smallest strong primes
 
 	var N = new(big.Int).Mul(p, q)
-	var g = new(big.Int).Exp( // Quadratic residue of order the RSA modulus N
-		new(big.Int).Rand(rand.New(rand.NewSource(time.Now().UnixNano())), N), big.NewInt(2), N,
-	)
+
+	var x *big.Int
+	if x, err = rand.Int(rand.Reader, N); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	// Quadratic residue of order the RSA modulus N
+	var g = new(big.Int).Exp(x, big.NewInt(2), N)
 
 	var A17 = new(big.Int).Exp(
 		g,
@@ -58,4 +67,67 @@ func E1ACCUM(order *big.Int) bool {
 	)
 
 	return bytes.Equal(left.Bytes(), right.Bytes())
+}
+
+// E2ACCUM computes a bilinear-map accumulator and evaluates one of the elements
+//  as a check of membership.
+func E2ACCUM(order *big.Int) bool {
+
+	var err error
+
+	var s *big.Int
+	if s, err = rand.Int(rand.Reader, order); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var g1 *bn256.G1
+	if _, g1, err = bn256.RandomG1(rand.Reader); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var g2 *bn256.G2
+	if _, g2, err = bn256.RandomG2(rand.Reader); err != nil {
+		fmt.Printf("parameter generation %v", err)
+	}
+
+	var A17 = new(bn256.G2).ScalarMult(
+		g2,
+		new(big.Int).Mul(
+			new(big.Int).Mul(
+				new(big.Int).Add(s, big.NewInt(3)),
+				new(big.Int).Add(big.NewInt(0), big.NewInt(1)),
+			),
+			new(big.Int).Mul(
+				new(big.Int).Add(s, big.NewInt(31)),
+				new(big.Int).Add(s, big.NewInt(53)),
+			),
+		),
+	)
+
+	var left = bn256.Pair(
+		new(bn256.G1).ScalarMult(
+			g1,
+			new(big.Int).Add(s, big.NewInt(17)),
+		),
+		A17,
+	)
+
+	var right = bn256.Pair(
+		g1,
+		new(bn256.G2).ScalarMult(
+			g2,
+			new(big.Int).Mul(
+				new(big.Int).Mul(
+					new(big.Int).Add(s, big.NewInt(3)),
+					new(big.Int).Add(s, big.NewInt(17)),
+				),
+				new(big.Int).Mul(
+					new(big.Int).Add(s, big.NewInt(31)),
+					new(big.Int).Add(s, big.NewInt(53)),
+				),
+			),
+		),
+	)
+
+	return bytes.Equal(left.Marshal(), right.Marshal())
 }
