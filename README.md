@@ -24,11 +24,9 @@ A simplifying technique of R1CS (Rank-1 Constraint Systems) to generate QAPs is 
 with the derived QAP. The code verifies the QAP is correct by checking two sides of an equation with quadratic root
 detection.
 
-Also included is an example for zero-knowledge set membership:
-
-  * https://www.ingwb.com/media/2667856/zero-knowledge-set-membership.pdf
-
 More useful links on the topic:
 
   * https://github.com/scipr-lab/libsnark
   * https://github.com/matter-labs/awesome-zero-knowledge-proofs
+
+  * https://medium.com/@panghalamit/cryptographic-accumulators-part1-3f23172d3fec
