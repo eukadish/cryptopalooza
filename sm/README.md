@@ -8,6 +8,6 @@ As well as both RSA and bilinear accumulators:
 
   * https://eprint.iacr.org/2009/625.pdf
 
-Also, this summarizing blog post with examples on accumulators was helpful:
+Blog post that summarizes the accumulator construction well:
 
   * https://medium.com/@panghalamit/cryptographic-accumulators-part1-3f23172d3fec
