@@ -28,5 +28,4 @@ More useful links on the topic:
 
   * https://github.com/scipr-lab/libsnark
   * https://github.com/matter-labs/awesome-zero-knowledge-proofs
-
   * https://medium.com/@panghalamit/cryptographic-accumulators-part1-3f23172d3fec
